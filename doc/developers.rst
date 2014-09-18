@@ -5,6 +5,7 @@ Extending *spreads*
 
 Setting up a development environment
 ====================================
+
 The easiest way to work on spreads is to install it to an editable
 virtual Python environment using the ``virtualenv`` tool and installing
 spreads into it using ``pip`` with the
@@ -19,8 +20,13 @@ for spreads is checked out to ``./spreads``::
   source ./bin/activate
   # The following dependencies are not pulled in automatically by
   # setuptools
-  pip install jpegtrans
+  pip install cffi
+  pip install jpegtran-cffi
   pip install -e ../spreads
+
+Other prerequisites you may required include:
+
+  libffi-dev
 
 .. _add_devices:
 
