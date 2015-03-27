@@ -23,6 +23,7 @@
     "lodash": "^3.6.0",
     "mousetrap": "^1.4.6",
     "react": "^0.13.1",
+    "whatwg-fetch": "^0.7.0",
     "zurb-foundation": "https://github.com/zurb/foundation/archive/v5.5.1.tar.gz"
   }
 }

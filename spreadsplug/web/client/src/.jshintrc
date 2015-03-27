@@ -1,0 +1,11 @@
+{
+    "curly": true,
+    "eqeqeq": true,
+    "freeze": true,
+    "undef": true,
+    "unused": true,
+    "esnext": true,
+    "browser": true,
+    "devel": true,
+    "predef": ["require", "module"]
+}
