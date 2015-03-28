@@ -6,6 +6,8 @@
     "babel-core": "^4.7.16",
     "babel-loader": "^4.2.0",
     "css-loader": "^0.9.1",
+    "eslint": "^0.17.1",
+    "eslint-loader": "^0.8.0",
     "file-loader": "^0.8.1",
     "jsx-loader": "^0.12.2",
     "node-sass": "^3.0.0-pre",
@@ -25,5 +27,54 @@
     "react": "^0.13.1",
     "whatwg-fetch": "^0.7.0",
     "zurb-foundation": "https://github.com/zurb/foundation/archive/v5.5.1.tar.gz"
+  },
+  "eslintConfig": {
+    "ecmaFeatures": {
+      "arrowFunctions": true,
+      "blockBindings": true,
+      "classes": true,
+      "destructuring": true,
+      "modules": true
+    },
+    "env": {
+      "browser": true
+    },
+    "globals": {
+      "require": false,
+      "module": false,
+      "fetch": true
+    },
+    "rules": {
+      "brace-style": "1tbs",
+      "camelcase": 2,
+      "comma-spacing": 2,
+      "consistent-this": 2,
+      "indent": [
+        2,
+        2
+      ],
+      "no-console": 0,
+      "no-var": 2,
+      "space-before-blocks": 2,
+      "space-before-function-parentheses": [
+        2,
+        {
+          "anonymous": "always",
+          "named": "never"
+        }
+      ],
+      "space-in-brackets": 2,
+      "space-in-parens": 2,
+      "space-infix-ops": 2,
+      "valid-jsdoc": [
+        2,
+        {
+          "prefer": {
+            "return": "returns"
+          },
+          "requireParamDescription": false
+        }
+      ]
+    }
   }
 }

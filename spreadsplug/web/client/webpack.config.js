@@ -11,8 +11,8 @@ module.exports = {
   },
   module: {
     loaders: [
-      {test: /\.js$/, loader: 'jsx-loader?harmony'},
-      {test: /\.css$/, loader: 'style!css'},
+      {test: /\.js/, loaders: ["babel-loader", "eslint-loader"], exclude: /node_modules/},
+      {test: /\.css$/, loader: "style!css"},
       {test: /\.scss$/, loader: "style!css!sass"},
       {test: /\.(ttf|svg|eot|woff|png|jpg)$/, loader: "file-loader"}
     ]
