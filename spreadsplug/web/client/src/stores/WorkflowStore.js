@@ -1,5 +1,5 @@
-import assign from "lodash/objects/assign";
-import has from "lodash/objects/has";
+import assign from "lodash/object/assign";
+import has from "lodash/object/has";
 import alt from "../alt";
 import WorkflowActions from "../actions/WorkflowActions";
 

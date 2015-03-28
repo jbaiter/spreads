@@ -1,4 +1,4 @@
-import * as fetch from "fetch";
+import * as fetch from "whatwg-fetch";
 
 import alt from "../alt";
 import {makeUrl, makeParams} from "../utils/WebAPIUtils.js";

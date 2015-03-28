@@ -1,5 +1,5 @@
-import map from "lodash/collections/map";
-import * as fetch from "fetch";
+import map from "lodash/collection/map";
+import * as fetch from "whatwg-fetch";
 
 export function makeUrl() {
   return arguments.join("/");
