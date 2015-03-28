@@ -1,41 +1,35 @@
-var _ = {
-  map: require('lodash/collections/map')
-};
-var makeJsonRequest = require('../utils/WebAPIUtils.js').makeJsonRequest;
-var makeUrl = require('../utils/WebAPIUtils.js');
-
-var alt = require('../alt');
+import {makeJsonRequest, makeUrl, makeParams} from "../utils/WebAPIUtils.js";
+import alt from "../alt";
 
 class PageActions {
   constructor() {
-    this.generateActions('remotelyDeleted', 'remotelyCropped', 'actionFailed');
+    this.generateActions("remotelyDeleted", "remotelyCropped", "actionFailed");
   }
 
-  deleteOne(options) {
+  deleteOne({workflowId, pageId}) {
     this.dispatch();
-    makeJsonRequest(makeUrl('/api/workflow', options.workflowId, 'page',
-                            options.pageId), 'delete', {})
+    makeJsonRequest(makeUrl("/api/workflow", workflowId, "page",
+                            pageId), "delete", {})
       .then((resp) => this.actions.remotelyDeleted(resp.json()))
       .catch((error) => this.actions.actionFailed(error.json()));
   }
 
-  deleteMany(options) {
+  deleteMany({workflowId, pageIds}) {
     this.dispatch();
-    makeJsonRequest(makeUrl('/api/workflow', options.workflowId, 'page'),
-                            'delete', {pages: options.pageIds})
+    makeJsonRequest(makeUrl("/api/workflow", workflowId, "page"),
+                            "delete", {pages: pageIds})
       .then((resp) => this.actions.remotelyDeleted(resp.json()))
       .catch((error) => this.actions.actionFailed(error.json()));
   }
 
-  crop(options) {
-    var paramParts = _.map(
-      options.cropParams,
-      (val, key) => encodeURIComponent(key) + '=' + encodeURIComponent(val));
-    makeJsonRequest(makeUrl('/api/workflow', options.workflowId, 'page',
-                            options.pageId, 'crop?' + paramParts), 'post', {})
-      .then(() => this.actions.remotelyCropped(options))
+  crop({workflowId, pageId, cropParams}) {
+    makeJsonRequest(
+      makeUrl("/api/workflow", workflowId, "page", pageId,
+              "crop" + makeParams(cropParams)),
+      "post", {})
+      .then(() => this.dispatch())
       .catch((error) => this.actions.actionFailed(error.json()));
   }
 }
 
-module.exports = alt.createActions(PageActions);
+export default alt.createActions(PageActions);
