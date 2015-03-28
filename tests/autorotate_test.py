@@ -15,7 +15,7 @@ def test_process():
     # No need for confit.Configuration, since the plugin doesn't have any
     # configuration
     config = {'autorotate': None}
-    pages = [Page(Path('{0:03}.jpg'.format(idx))) for idx in xrange(4)]
+    pages = [Page(Path('{0:03}.jpg'.format(idx)), None) for idx in xrange(4)]
     target_path = Path('/tmp/dummy')
 
     with mock.patch('spreadsplug.autorotate.ProcessPoolExecutor') as mockctx:

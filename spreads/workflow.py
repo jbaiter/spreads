@@ -150,11 +150,12 @@ class Page(object):
     # contain two individual pages, i.e. the whole bookspreads was captured in
     # a single image. How would we deal with that scenario?
     __slots__ = [b"sequence_num", b"capture_num", b"raw_image", b"page_label",
-                 b"processed_images"]
+                 b"processed_images", "_workflow_id"]
 
-    def __init__(self, raw_image, sequence_num=None, capture_num=None,
-                 page_label=None, processed_images=None):
+    def __init__(self, raw_image, workflow_id, sequence_num=None,
+                 capture_num=None, page_label=None, processed_images=None):
         self.raw_image = raw_image
+        self._workflow_id = workflow_id
         self.processed_images = processed_images or {}
         if capture_num:
             self.capture_num = capture_num
@@ -206,6 +207,7 @@ class Page(object):
             'page_label': self.page_label,
             'raw_image': self.raw_image,
             'processed_images': self.processed_images,
+            'workflow_id': self._workflow_id
         }
 
 
@@ -784,7 +786,8 @@ class Workflow(object):
                         capture_num=dikt['capture_num'],
                         processed_images=processed_images,
                         page_label=dikt['page_label'],
-                        sequence_num=dikt['sequence_num'])
+                        sequence_num=dikt['sequence_num'],
+                        workflow_id=self.id)
         fpath = self.path / 'pagemeta.json'
         if not fpath.exists():
             return []
@@ -857,7 +860,7 @@ class Workflow(object):
                     else last_num+2)
         path = base_path / "{0:03}.{1}".format(next_num,
                                                'dng' if is_raw else 'jpg')
-        return Page(path, capture_num=next_num)
+        return Page(path, capture_num=next_num, workflow_id=self.id)
 
     def prepare_capture(self):
         """ Prepare capture on devices and initialize trigger plugins. """

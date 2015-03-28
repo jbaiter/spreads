@@ -76,7 +76,7 @@ def test_process(get_sp, plugin, tmpdir):
     plugin._generate_output = create_out_files
     plugin.config['autopilot'] = True
 
-    pages = [Page(Path('{0:03}.jpg'.format(idx))) for idx in xrange(5)]
+    pages = [Page(Path('{0:03}.jpg'.format(idx)), None) for idx in xrange(5)]
     target_dir = Path(unicode(tmpdir))
     plugin.process(pages, target_dir)
     assert get_sp.call_count == 0

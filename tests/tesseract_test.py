@@ -71,7 +71,7 @@ def test_output(plugin, tmpdir):
     dummy_pages = []
     for idx in xrange(20):
         dummy_pages.append(
-            Page(Path('000.jpg'), idx,
+            Page(Path('000.jpg'), None, idx,
                  processed_images={'tesseract': Path('./tests/data/000.hocr')})
         )
     plugin.output(dummy_pages, Path(unicode(tmpdir)), None, None)
