@@ -1,12 +1,28 @@
-var path = require('path'),
-    webpack = require('webpack');
+/*eslint-disable*/
+var path = require("path");
+var webpack = require("webpack");
+
+var __DEV__ = process.env.BUILD_DEV !== undefined;
+var definePlugin = new webpack.DefinePlugin({
+  __DEV__: JSON.stringify(__DEV__)
+});
+
+var plugins= [definePlugin];
+if (!__DEV__) {
+    plugins.push(new webpack.optimize.DedupePlugin());
+    plugins.push(new webpack.optimize.UglifyJsPlugin({
+      compress: {warnings: false, drop_console: true}
+    }));
+}
 
 module.exports = {
   cache: true,
-  entry: './src/main.js',
+  debug: __DEV__,
+  devtool: __DEV__ ? "eval" : null,
+  entry: "./src/app.js",
   output: {
     path: path.join(__dirname, "build"),
-    filename: "bundle.js",
+    filename: __DEV__ ? "bundle-dev.js" : "bundle.js",
     publicPath: "/static/"
   },
   module: {
@@ -15,10 +31,15 @@ module.exports = {
       {test: /\.css$/, loader: "style!css"},
       {test: /\.scss$/, loader: "style!css!sass"},
       {test: /\.(ttf|svg|eot|woff|png|jpg)$/, loader: "file-loader"}
-    ]
+    ],
+    noParse: /\.min\.js/
   },
-  plugins: [
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.UglifyJsPlugin()
-  ]
+  resolve: {
+    extensions: ["", ".js", ".json", ".jsx"],
+    modulesDirectories: ["node_modules", "src"]
+  },
+  eslint: {
+    emitWarning: true
+  },
+  plugins: plugins
 }

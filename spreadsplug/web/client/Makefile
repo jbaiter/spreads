@@ -12,14 +12,14 @@ node_modules:
 
 production: node_modules
 	@echo Building minified production package
-	@$(WEBPACK_BIN) -p --progress > /dev/null
+	@$(WEBPACK_BIN) -p --progress
 
 development: node_modules
 	@echo Building development package with source map
-	@$(WEBPACK_BIN) -d --config webpack.config.dev.js --progress > /dev/null
+	@BUILD_DEV=1 $(WEBPACK_BIN) -d --progress
 
 watch: node_modules
-	$(WEBPACK_BIN) -d --config webpack.config.dev.js --watch
+	BUILD_DEV $(WEBPACK_BIN) -d --config webpack.config.dev.js --watch
 
 test: node_modules
 	@echo Running tests
