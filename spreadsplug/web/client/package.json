@@ -16,11 +16,14 @@
     "raw-loader": "^0.5.1",
     "react-tools": "^0.13.1",
     "sass-loader": "^1.0.0",
+    "style-loader": "^0.9.0",
     "url-loader": "^0.5.5",
     "webpack": "^1.7.3"
   },
   "dependencies": {
     "alt": "^0.14.5",
+    "babel-runtime": "^4.7.16",
+    "bootstrap-sass": "^3.3.4",
     "classnames": "^1.2.0",
     "connect-fonts-opensans": "0.0.5",
     "font-awesome": "^4.3.0",
@@ -28,7 +31,9 @@
     "lodash": "^3.6.0",
     "mousetrap": "^1.4.6",
     "react": "^0.13.1",
+    "react-bootstrap": "^0.19.1",
     "react-router": "^0.13.2",
+    "react-router-bootstrap": "^0.12.1",
     "whatwg-fetch": "^0.7.0",
     "zurb-foundation": "https://github.com/zurb/foundation/archive/v5.5.1.tar.gz"
   },
@@ -47,12 +52,14 @@
     "globals": {
       "require": false,
       "module": false,
-      "fetch": true
+      "__DEV__": false
     },
+    "parser": "babel-eslint",
     "plugins": [
       "react"
     ],
     "rules": {
+      "strict": 0,
       "brace-style": "1tbs",
       "camelcase": 2,
       "comma-spacing": 2,
@@ -61,9 +68,15 @@
         2,
         2
       ],
+      "max-len": [
+        1,
+        100,
+        2
+      ],
       "no-console": 0,
       "no-underscore-dangle": 0,
       "no-var": 2,
+      "semi-spacing": 0,
       "space-before-blocks": 2,
       "space-before-function-parentheses": [
         2,

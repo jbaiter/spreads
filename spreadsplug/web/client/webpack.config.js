@@ -28,10 +28,11 @@ module.exports = {
   module: {
     loaders: [
       {test: require.resolve("react"), loader: "expose?React"},
-      {test: /\.js/, loaders: ["babel-loader", "eslint-loader"], exclude: /node_modules/},
+      {test: /\.js/, loaders: ["babel-loader?experimental&optional=runtime", "eslint-loader"], exclude: /node_modules/},
       {test: /\.css$/, loader: "style!css"},
       {test: /\.scss$/, loader: "style!css!sass"},
-      {test: /\.(ttf|svg|eot|woff|png|jpg)$/, loader: "file-loader"}
+      {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&minetype=application/font-woff"},
+      {test: /\.(ttf|eot|svg|png|jpg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader"}
     ],
     noParse: /\.min\.js/
   },

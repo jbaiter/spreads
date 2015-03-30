@@ -2,15 +2,14 @@ import alt from "../alt";
 import WorkflowActions from "../actions/WorkflowActions";
 import PageActions from "../actions/PageActions";
 
-class WorkflowStore {
+class PageStore {
   constructor() {
     this.pages = {};
 
     this.bindListeners({
       handleWorkflowCreated: WorkflowActions.REMOTELY_CREATED,
       handleWorkflowDeleted: WorkflowActions.REMOTELY_DELETED,
-      handleDeleted: PageActions.REMOTELY_DELETED,
-      handleCropped: PageActions.REMOTELY_CROPPED
+      handleDeleted: PageActions.REMOTELY_DELETED
     });
   }
 
@@ -27,4 +26,4 @@ class WorkflowStore {
   }
 }
 
-export default alt.createStore(WorkflowStore, "WorkflowStore");
+export default alt.createStore(PageStore, "PageStore");

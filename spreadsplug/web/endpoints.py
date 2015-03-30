@@ -179,7 +179,8 @@ def _bootstrapped_state():
 def index():
     """ Deliver static landing page that launches the client-side app. """
     return render_template("index.html",
-                           boostrap_data=_bootstrapped_state())
+                           bootstrap_data=_bootstrapped_state(),
+                           debug=app.config['debug'])
 
 
 @app.route('/api/bootstrap', methods=['GET'])
@@ -754,7 +755,7 @@ def inject_page(func):
                     if p.capture_num == kwargs['number']), None)
         if not page:
             raise ApiException(
-                "Could not find page with capture number {1}"
+                "Could not find page with capture number {0}"
                 .format(kwargs['number']), 404)
         return func(*args, page=page, **kwargs)
     return view_func

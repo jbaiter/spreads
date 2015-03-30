@@ -1,5 +1,3 @@
-import assign from "lodash/object/assign";
-import has from "lodash/object/has";
 import alt from "../alt";
 import WorkflowActions from "../actions/WorkflowActions";
 
@@ -8,15 +6,15 @@ class WorkflowStore {
     this.workflows = {};
 
     this.bindListeners({
-      handleUpdated: [WorkflowActions.REMOTELY_CREATED,
-                      WorkflowActions.REMOTELY_UPDATED],
-      handleDeleted: WorkflowActions.REMOTELY_DELETED
+      handleUpdated: [WorkflowActions.remotelyCreated,
+                      WorkflowActions.remotelyUpdated],
+      handleDeleted: WorkflowActions.remotelyDeleted
     });
   }
 
   handleUpdated(workflow) {
-    if (has(this.workflows, workflow.id)) {
-      assign(this.workflows[workflow.id], workflow);
+    if (this.workflows.hasOwnProperty(workflow.id)) {
+      Object.assign(this.workflows[workflow.id], workflow);
     } else {
       this.workflows[workflow.id] = workflow;
     }

@@ -1,8 +1,7 @@
-import partial from "lodash/function/partial";
 import {makeJsonRequest, makeUrl as _makeUrl} from "../utils/WebAPIUtils.js";
 import alt from "../alt";
 
-const makeUrl = partial(makeUrl, "/api/workflow");
+const makeUrl = _makeUrl.bind(null, "/api/workflow");
 
 class WorkflowActions {
   constructor() {

@@ -1,19 +1,25 @@
-import * as fetch from "whatwg-fetch";
+import "whatwg-fetch";
+import throttle from "lodash/function/throttle";
 import makeParams from "../utils/WebAPIUtils.js"
 import WorkflowActions from "../actions/WorkflowActions.js";
 import CaptureActions from "../actions/CaptureActions.js";
+import SystemActions from "../actions/SystemActions.js";
+import LoggingActions from "../actions/LoggingActions.js";
 
 const ACTION_MAPPING = {
   "workflow:removed": WorkflowActions.remotelyDeleted,
   "workflow:capture-triggered": CaptureActions.triggered,
   "workflow:capture-succeeded": CaptureActions.succeeded,
   "workflow:capture-failed": CaptureActions.failed,
-  "workflow:modified": WorkflowActions.remotelyUpdated
+  "workflow:modified": WorkflowActions.remotelyUpdated.bind(
+    WorkflowActions, (data) => data.changes),
+  "logrecord": LoggingActions.newRecord
 };
 
 class Poller {
-  start({onEvents}) {
+  start({onEvents, onError}) {
     this.onEvents = onEvents;
+    this.onError = onError;
   }
 
   doPoll() {
@@ -25,7 +31,6 @@ class Poller {
     fetch("/api/poll" + makeParams(args), {method: "post"})
       .then((resp) => {
         this.onEvents(this.newEvents(resp.json()));
-        this.errorSleepTime = 500;
         window.setTimeout(this.doPoll, 0);
       }).catch(this.onError);
   }
@@ -36,16 +41,21 @@ class Poller {
     console.log(events.length, "new events, cursor:", this.cursor);
     return events;
   }
-
-  onError() {
-    this.errorSleepTime *= 2;
-    console.log("Poll error; sleeping for", this.errorSleepTime, "ms");
-    window.setTimeout(this.doPoll, this.errorSleepTime);
-  }
 }
 
-class ServerEventListener {
+export default class ServerEventListener {
   constructor() {
+    this.checkOnline = throttle(() => {
+      fetch("/", {method: "head"})
+        .then(() => {
+          SystemActions.reconnected();
+          this.connect();
+        })
+        .catch(this.checkOnline);
+    }, 5000);
+  }
+
+  connect() {
     if (window.MozWebSocket) {
       window.WebSocket = window.MozWebSocket;
     }
@@ -70,12 +80,21 @@ class ServerEventListener {
       this.websocket.onmessage = (messageEvent) => {
         this.onEvent(JSON.parse(messageEvent.data));
       };
+      this.websocket.onclose = () => {
+        SystemActions.disconnected();
+        this.checkOnline();
+      };
     };
   }
 
   connectPolling() {
     this.poller = new Poller();
-    this.poller.start({onEvents: (events) => events.forEach(this.onEvent)});
+    this.poller.start({
+      onEvents: (events) => events.forEach(this.onEvent),
+      onError: () => {
+        SystemActions.disconnected();
+        this.checkOnline();
+      }});
   }
 
   close() {
@@ -84,12 +103,9 @@ class ServerEventListener {
     } else {
       this.websocket.close();
     }
-
   }
 
   onEvent({name, data}) {
     ACTION_MAPPING[name](data);
   }
 }
-
-export default ServerEventListener;
