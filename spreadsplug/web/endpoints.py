@@ -135,12 +135,12 @@ def handle_general_exception(error):
     return response
 
 
-# =================== #
-#  General endpoints  #
-# =================== #
-@app.route('/')
-def index():
-    """ Deliver static landing page that launches the client-side app. """
+def _bootstrapped_state():
+    """ Get state for bootstrapping the client-side application. """
+    workflows = Workflow.find_all(app.config['base_path'])
+    logbuffer = next(
+        x for x in logging.getLogger().handlers
+        if isinstance(x, logging.handlers.BufferingHandler)).buffer
     default_config = cache.get('default-config')
     if default_config is None:
         default_config = app.config['default_config'].flatten()
@@ -149,15 +149,42 @@ def index():
     if templates is None:
         templates = _get_templates()
         cache.set('plugin-templates', templates)
-    return render_template(
-        "index.html",
-        version=get_version(),
-        debug=app.config['debug'],
-        default_config=default_config,
-        plugins=_list_plugins(),
-        config_templates=templates,
-        metaschema=spreads.metadata.Metadata.SCHEMA,
-    )
+    return {
+        "WorkflowStore": {
+            "workflows": {wf.id: {k: v for k, v in wf.to_dict().iteritems()
+                                  if k != "pages"}
+                          for wf in workflows.values()}},
+        "PageStore": {
+            "pages": {wf.id: {pg.capture_num: pg.to_dict() for pg in wf.pages}
+                      for wf in workflows.values()}},
+        "LoggingStore": {
+            "records": sorted(logbuffer, key=lambda x: x.relativeCreated,
+                              reverse=True),
+            "numUnreadErrors": len([x for x in logbuffer
+                                    if x.levelno >= logging.ERROR])},
+        "AppStateStore": {
+            "version": get_version(),
+            "config": default_config,
+            "plugins": _list_plugins(),
+            "configTemplates": templates,
+            "metadataSchema": spreads.metadata.Metadata.SCHEMA,
+            "isOffline": False}
+    }
+
+
+# =================== #
+#  General endpoints  #
+# =================== #
+@app.route('/')
+def index():
+    """ Deliver static landing page that launches the client-side app. """
+    return render_template("index.html",
+                           boostrap_data=_bootstrapped_state())
+
+
+@app.route('/api/bootstrap', methods=['GET'])
+def get_bootstrapped_state():
+    return jsonify(_bootstrapped_state())
 
 
 @app.route('/api/log')

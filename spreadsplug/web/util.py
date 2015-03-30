@@ -68,8 +68,6 @@ class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
         if hasattr(obj, 'to_dict'):
             return obj.to_dict()
-        elif isinstance(obj, Workflow):
-            return self._workflow_to_dict(obj)
         elif isinstance(obj, logging.LogRecord):
             return self._logrecord_to_dict(obj)
         elif isinstance(obj, Event):
@@ -81,22 +79,6 @@ class CustomJSONEncoder(JSONEncoder):
             return (time.mktime(obj.timetuple())*1000 + obj.microsecond)/1000.0
         else:
             return JSONEncoder.default(self, obj)
-
-    def _workflow_to_dict(self, workflow):
-        return {
-            'id': workflow.id,
-            'slug': workflow.slug,
-            'metadata': dict(workflow.metadata),
-            'status': workflow.status,
-            'last_modified': workflow.last_modified,
-            'pages': workflow.pages,
-            'out_files': [{'name': path.name,
-                           'mimetype': path}
-                          for path in workflow.out_files],
-            'config': {k: v for k, v in workflow.config.flatten().iteritems()
-                       if k in workflow.config['plugins'].get() or
-                       k in ('device', 'plugins')}
-        }
 
     def _logrecord_to_dict(self, record):
         return {

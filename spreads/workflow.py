@@ -992,3 +992,23 @@ class Workflow(object):
         if 'device' in diff:
             self._run_hook('update_configuration', diff['device'])
         on_modified.send(self, changes={'config': self.config.flatten()})
+
+    def to_dict(self):
+        """ Serialize entity to a dict.
+
+        Used by :py:class:`spreads.util.CustomJSONEncoder`.
+        """
+        return {
+            'id': self.id,
+            'slug': self.slug,
+            'metadata': dict(self.metadata),
+            'status': self.status,
+            'last_modified': self.last_modified,
+            'pages': self.pages,
+            'out_files': [{'name': path.name,
+                           'mimetype': path}
+                          for path in self.out_files],
+            'config': {k: v for k, v in self.config.flatten().iteritems()
+                       if k in self.config['plugins'].get() or
+                       k in ('device', 'plugins')}
+        }
