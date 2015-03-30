@@ -27,6 +27,7 @@ module.exports = {
   },
   module: {
     loaders: [
+      {test: require.resolve("react"), loader: "expose?React"},
       {test: /\.js/, loaders: ["babel-loader", "eslint-loader"], exclude: /node_modules/},
       {test: /\.css$/, loader: "style!css"},
       {test: /\.scss$/, loader: "style!css!sass"},
