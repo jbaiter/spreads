@@ -19,7 +19,7 @@ development: node_modules
 	@BUILD_DEV=1 $(WEBPACK_BIN) -d --progress
 
 watch: node_modules
-	BUILD_DEV $(WEBPACK_BIN) -d --config webpack.config.dev.js --watch
+	BUILD_DEV=1 $(WEBPACK_BIN) -d --watch
 
 test: node_modules
 	@echo Running tests
