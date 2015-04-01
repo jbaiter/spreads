@@ -29,4 +29,6 @@ if (__DEV__) {
 }
 
 ReactRouter.run(routes, ReactRouter.HistoryLocation,
-                (Handler) => React.render(<Handler/>, document.body));
+                (Handler, {params, query}) => React.render(
+                  <Handler params={params} query={query}/>,
+                  document.body));

@@ -42,13 +42,13 @@ export default React.createClass({
   render() {
     return (
       <div>
-          <Navbar brand={<Link to="home">spreads</Link>} toggleNavKey={0}>
+        <Navbar brand={<Link to="home">spreads</Link>} toggleNavKey={0}>
           <CollapsableNav eventKey={0}>
           {this.state.config.web.mode !== "processor" &&
             <Nav navbar>
-              <NavItem eventKey={1} to="edit-workflow" params={{isNew: true}}>
+              <NavItemLink eventKey={1} to="new-workflow">
                 <Icon name="plus" /> New Workflow
-              </NavItem>
+              </NavItemLink>
             </Nav>}
             <Nav navbar right>
               <NavItemLink eventKey={1} to="logging">
@@ -73,7 +73,9 @@ export default React.createClass({
               </Nav>
             </CollapsableNav>
         </Navbar>
-        <RouteHandler {...this.props} />
+        <div className="container">
+          <RouteHandler {...this.props} />
+        </div>
       </div>
     );
   }

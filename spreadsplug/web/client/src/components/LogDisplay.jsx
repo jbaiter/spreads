@@ -37,6 +37,10 @@ export default React.createClass({
   // TODO: Pagination
   displayName: "LogDisplay",
   mixins: [ListenerMixin],
+  propTypes: {
+    params: PropTypes.object,
+    query: PropTypes.object
+  },
 
   getInitialState() {
     return loggingStore.getState();

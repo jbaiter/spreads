@@ -11,6 +11,8 @@ class WorkflowActions {
                          "submissionProgressed",
                          "transferProgressed",
                          "actionFailed");
+    // TODO: "actionFailed" should probably be a bit more involved and contain
+    // the type of action that failed
   }
 
   create(data) {

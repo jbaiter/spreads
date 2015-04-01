@@ -4,6 +4,7 @@
   "description": "",
   "devDependencies": {
     "babel-core": "^4.7.16",
+    "babel-eslint": "^2.0.2",
     "babel-loader": "^4.2.0",
     "css-loader": "^0.9.1",
     "eslint": "^0.17.1",
@@ -14,6 +15,7 @@
     "jsx-loader": "^0.12.2",
     "node-sass": "^3.0.0-pre",
     "raw-loader": "^0.5.1",
+    "react-hot-loader": "^1.2.4",
     "react-tools": "^0.13.1",
     "sass-loader": "^1.0.0",
     "style-loader": "^0.9.0",
@@ -30,10 +32,15 @@
     "jquery": "^2.1.3",
     "lodash": "^3.6.0",
     "mousetrap": "^1.4.6",
+    "newforms": "^0.12.1",
+    "newforms-bootstrap": "^2.0.0",
     "react": "^0.13.1",
     "react-bootstrap": "^0.19.1",
     "react-router": "^0.13.2",
     "react-router-bootstrap": "^0.12.1",
+    "tcomb": "^1.0.1",
+    "tcomb-form": "^0.4.5",
+    "tcomb-validation": "^1.0.2",
     "whatwg-fetch": "^0.7.0",
     "zurb-foundation": "https://github.com/zurb/foundation/archive/v5.5.1.tar.gz"
   },
@@ -52,6 +59,7 @@
     "globals": {
       "require": false,
       "module": false,
+      "fetch": true,
       "__DEV__": false
     },
     "parser": "babel-eslint",
@@ -73,6 +81,7 @@
         100,
         2
       ],
+      "new-cap": 0,
       "no-console": 0,
       "no-underscore-dangle": 0,
       "no-var": 2,
