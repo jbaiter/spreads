@@ -275,16 +275,22 @@ def _list_plugins():
     """
     config = app.config['default_config']
     plugins = plugin.get_plugins(*config['plugins'].get())
-    return {
-        'capture': [name for name, cls in plugins.iteritems()
-                    if issubclass(cls, plugin.CaptureHooksMixin)],
-        'trigger': [name for name, cls in plugins.iteritems()
-                    if issubclass(cls, plugin.TriggerHooksMixin)],
-        'postprocessing': [name for name, cls in plugins.iteritems()
-                           if issubclass(cls, plugin.ProcessHooksMixin)],
-        'output': [name for name, cls in plugins.iteritems()
-                   if issubclass(cls, plugin.OutputHooksMixin)]
-    }
+    out = {}
+    if app.config['mode'] != 'processor':
+        out.update({
+            'capture': [name for name, cls in plugins.iteritems()
+                        if issubclass(cls, plugin.CaptureHooksMixin)],
+            'trigger': [name for name, cls in plugins.iteritems()
+                        if issubclass(cls, plugin.TriggerHooksMixin)]
+        })
+    if app.config['mode'] != 'scanner':
+        out.update({
+            'postprocessing': [name for name, cls in plugins.iteritems()
+                               if issubclass(cls, plugin.ProcessHooksMixin)],
+            'output': [name for name, cls in plugins.iteritems()
+                       if issubclass(cls, plugin.OutputHooksMixin)]
+        })
+    return out
 
 
 def _get_templates():
