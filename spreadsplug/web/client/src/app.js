@@ -28,6 +28,12 @@ if (__DEV__) {
   alt.dispatcher.register(console.log.bind(console));
 }
 
+const pathRegex = /.*\/#(.*)/;
+if (pathRegex.test(window.location.href)) {
+  const path = "/" + pathRegex.exec(window.location.href)[1];
+  window.history.replaceState({path: path}, "", path);
+}
+
 ReactRouter.run(routes, ReactRouter.HistoryLocation,
                 (Handler, {params, query}) => React.render(
                   <Handler params={params} query={query}/>,
