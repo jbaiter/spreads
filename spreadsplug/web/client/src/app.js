@@ -1,5 +1,6 @@
 import React from "react";
 import ReactRouter from "react-router";
+import fetch from "whatwg-fetch";
 
 import routes from "./routes";
 import alt from "./alt";

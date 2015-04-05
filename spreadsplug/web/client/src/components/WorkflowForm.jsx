@@ -4,7 +4,7 @@ import ActionListeners from "alt/utils/ActionListeners";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 
 import alt from "../alt";
-import {getConfigFormSchema} from "../utils/FormUtils.js";
+import {AutocompleteTextboxTemplate, getConfigFormSchema} from "../utils/FormUtils.js";
 import WorkflowActions from "../actions/WorkflowActions.js";
 import workflowStore from "../stores/WorkflowStore.js";
 import appStateStore from "../stores/AppStateStore.js";
@@ -112,6 +112,17 @@ export default React.createClass({
     const configStructs = configSchema.structs;
     const configOptions = {fields: configSchema.fieldConfig};
     const metaSchema = getMetadataFormSchema(this.state.metadataSchema);
+
+    // Enable autocompletion for book titles
+    if (metaSchema.structs.hasOwnProperty("title")) {
+      metaSchema.fieldConfig.title = {
+        template: AutocompleteTextboxTemplate,
+        config: {
+          onAutocompleted: this.handleMetadataChange
+        }
+      };
+    }
+
     const metaStructs = metaSchema.structs;
     const metaOptions = {fields: metaSchema.fieldConfig};
     const headlineText = this.props.params.id ?
@@ -122,7 +133,7 @@ export default React.createClass({
         <h2>{headlineText}</h2>
         <form className="form-horizontal" onSubmit={this.handleSubmit}>
           <t.form.Form type={t.struct(metaStructs)} options={metaOptions}
-                      value={this.state.metaValues} ref="metadataForm"
+                      value={this.state.metadataValues} ref="metadataForm"
                       onChange={this.handleMetadataChange}/>
           <t.form.Form type={t.struct(configStructs)} options={configOptions}
                       value={this.state.configValues} ref="configForm"

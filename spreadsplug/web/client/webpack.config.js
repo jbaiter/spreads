@@ -4,16 +4,26 @@ var webpack = require("webpack");
 
 var __DEV__ = process.env.BUILD_DEV !== undefined;
 var definePlugin = new webpack.DefinePlugin({
-  __DEV__: JSON.stringify(__DEV__)
+  __DEV__: JSON.stringify(__DEV__),
+  "process.env": {
+    NODE_ENV: JSON.stringify(__DEV__ ? "development" : "production")
+  }
 });
 
-var plugins= [definePlugin];
+var plugins= [];
 if (!__DEV__) {
-    plugins.push(new webpack.optimize.DedupePlugin());
     plugins.push(new webpack.optimize.UglifyJsPlugin({
-      compress: {warnings: false, drop_console: true}
+      compress: {
+        warnings: false,
+        drop_console: true,
+        pure_getters: true,
+        unsafe: true
+      },
+      mangle: true
     }));
+    plugins.push(new webpack.optimize.DedupePlugin());
 }
+plugins.push(definePlugin);
 
 module.exports = {
   cache: true,

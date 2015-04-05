@@ -4,11 +4,28 @@ import each from "lodash/collection/each";
 import map from "lodash/collection/map";
 import values from "lodash/object/values";
 
+import {makeUrl, makeParams} from "./WebAPIUtils.js";
+import AutocompleteTextbox from "../components/AutocompleteTextbox.jsx";
+
+
 const TYPE_MAP = {
   "boolean": t.Bool,
   "string": t.Str,
   "number": t.Num
 };
+
+export function AutocompleteTextboxTemplate(locals) { // eslint-disable-line
+  function handleChange(selectedItem) { // eslint-disable-line
+    if (selectedItem.identifier) {
+      locals.config.onAutocompleted(selectedItem);
+    } else {
+      locals.onChange(selectedItem.title);
+    }
+  }
+
+  return (<AutocompleteTextbox value={locals.value} name={locals.name}
+                               onChange={handleChange} />);
+}
 
 function CustomSelectTemplate(locals) {
   const CustomSelect = React.createClass({
