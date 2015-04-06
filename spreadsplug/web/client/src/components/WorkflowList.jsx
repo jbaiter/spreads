@@ -58,10 +58,6 @@ export default React.createClass({
       <div>
         <h1>Workflows</h1>
         <div>{workflowItems}</div>
-        <Pager>
-          <PageItem previous href="#">&larr; Previous Page</PageItem>
-          <PageItem next href="#">&rarr; Next Page</PageItem>
-        </Pager>
       </div>
     );
   }

@@ -6,8 +6,10 @@ import map from "lodash/collection/map";
 import {Modal, Button} from "react-bootstrap";
 
 import alt from "../alt";
-import {AutocompleteTextboxTemplate, getConfigFormSchema} from "../utils/FormUtils.js";
 import {makeUrl, fetchJson} from "../utils/WebAPIUtils.js";
+import getWorkflowConfigSchema from "../forms/schemata/workflowConfigSchema.js";
+import getWorkflowMetadataSchema from "../forms/schemata/workflowMetadataSchema.js";
+import AutocompleteTextboxTemplate from "../forms/templates/AutocompleteTextboxTemplate.jsx";
 import WorkflowActions from "../actions/WorkflowActions.js";
 import workflowStore from "../stores/WorkflowStore.js";
 import appStateStore from "../stores/AppStateStore.js";
@@ -15,20 +17,6 @@ import Icon from "./Icon.jsx";
 
 const {PropTypes} = React;
 const actionListener = new ActionListeners(alt);
-
-function getMetadataFormSchema(templates) {
-  return templates.reduce((cur, field) => {
-    if (field.multivalued) {
-      cur.structs[field.key] = t.list(t.Str);
-    } else {
-      cur.structs[field.key] = t.Str;
-    }
-    cur.fieldConfig[field.key] = {
-      label: field.description
-    };
-    return cur;
-  }, {structs: {}, fieldConfig: {}});
-}
 
 const ProposalModal = React.createClass({
   displayName: "ProposalModal",
@@ -43,15 +31,14 @@ const ProposalModal = React.createClass({
       <Modal {...this.props} bsStyle="primary" title="Automaticall fill metadata?"
              onRequestHide={this.props.onCancel}>
         <div className="modal-body">
-          <h3>Automatically fill in metadata from ISBN?</h3>
           <p>
             We have found a match for the ISBN you entered.
             Do you want to automically fill in the other fields?
           </p>
           <dl>
           {[].concat(...map(this.props.proposedData, (value, key) => [
-            <dt>{key}</dt>,
-            <dd>{value}</dd>
+            <dt key={"term-" + key}>{key}</dt>,
+            <dd key={"def-" + key}>{value}</dd>
           ]))}
           </dl>
         </div>
@@ -95,7 +82,8 @@ export default React.createClass({
       configTemplates,
       availablePlugins: plugins,
       metadataSchema,
-      proposedMetadata: null
+      proposedMetadata: null,
+      autofilled: false
     };
   },
 
@@ -125,10 +113,11 @@ export default React.createClass({
     this.setState({configValues: newData});
   },
 
-  handleMetadataChange(value) {
+  handleMetadataChange(value, fromAutocomplete=false) {
     let newData = this.state.metadataValues;
     Object.assign(newData, value);
-    if (!this.state.metadataValues.identifier !== newData.identifier) {
+    if (newData.identifier && !fromAutocomplete &&
+        (!this.state.metadataValues.identifier !== newData.identifier)) {
       let isbnNo = null;
       newData.identifier.forEach((identifier) => {
         if (identifier && identifier.toLowerCase().startsWith("isbn:")) {
@@ -160,21 +149,21 @@ export default React.createClass({
   },
 
   render() {
-    const configSchema = getConfigFormSchema({
+    const configSchema = getWorkflowConfigSchema({
       currentValues: this.state.configValues,
       availablePlugins: this.state.availablePlugins,
       templates: this.state.configTemplates
     });
     const configStructs = configSchema.structs;
     const configOptions = {fields: configSchema.fieldConfig};
-    const metaSchema = getMetadataFormSchema(this.state.metadataSchema);
+    const metaSchema = getWorkflowMetadataSchema(this.state.metadataSchema);
 
     // Enable autocompletion for book titles
     if (metaSchema.structs.hasOwnProperty("title")) {
       metaSchema.fieldConfig.title = {
         template: AutocompleteTextboxTemplate,
         config: {
-          onAutocompleted: this.handleMetadataChange
+          onAutocompleted: (data) => this.handleMetadataChange(data, true)
         }
       };
     }
