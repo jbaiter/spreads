@@ -5,7 +5,8 @@ import SystemActions from "actions/SystemActions.js";
 class AppStateStore {
   constructor() {
     this.config = {};
-    this.plugins = {};
+    this.enabledPlugins = {};
+    this.allPlugins = {};
     this.configTemplates = {};
     this.metadataSchema = {};
     this.isOffline = false;

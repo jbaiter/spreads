@@ -27,12 +27,12 @@ import functools
 import itertools
 import logging
 import logging.handlers
+import pkg_resources
 import subprocess
 import sys
 import traceback
 from isbnlib import is_isbn10, is_isbn13
 
-import pkg_resources
 import requests
 from flask import (json, jsonify, request, send_file, render_template,
                    redirect, make_response, Response)
@@ -165,7 +165,8 @@ def _bootstrapped_state():
         "AppStateStore": {
             "version": get_version(),
             "config": default_config,
-            "plugins": _list_plugins(),
+            "enabledPlugins": _list_plugins(),
+            "allPlugins": _list_plugins(enabled_only=False),
             "configTemplates": templates,
             "metadataSchema": spreads.metadata.Metadata.SCHEMA,
             "isOffline": False}
@@ -268,27 +269,36 @@ def get_isbn_info(isbn):
 # ==================================== #
 #  Plugin and Configuration endpoints  #
 # ==================================== #
-def _list_plugins():
-    """ Get a the names of all activated plugins grouped by type.
+def _list_plugins(enabled_only=True):
+    """ Get a the names of plugins grouped by type.
 
+    :param enabled_only:    Only return activated plugins
+    :type enabled_only:     bool
     :rtype: dict (key: unicode, value: list of unicode)
     """
     config = app.config['default_config']
-    plugins = plugin.get_plugins(*config['plugins'].get())
-    out = {}
-    if app.config['mode'] != 'processor':
+    exts = list(pkg_resources.iter_entry_points('spreadsplug.hooks'))
+    activated = config['plugins'].get()
+
+    def get_kind(mixin):
+        return sorted(
+            [ext.name for ext in exts
+             if (ext.name in activated or not enabled_only) and
+             issubclass(ext.load(), mixin)],
+            key=lambda x: activated.index(x) if enabled_only else 0)
+
+    out = {
+        'subcommand': get_kind(plugin.SubcommandHooksMixin)
+    }
+    if app.config['mode'] != 'processor' or not enabled_only:
         out.update({
-            'capture': [name for name, cls in plugins.iteritems()
-                        if issubclass(cls, plugin.CaptureHooksMixin)],
-            'trigger': [name for name, cls in plugins.iteritems()
-                        if issubclass(cls, plugin.TriggerHooksMixin)]
+            'capture': get_kind(plugin.CaptureHooksMixin),
+            'trigger': get_kind(plugin.TriggerHooksMixin)
         })
-    if app.config['mode'] != 'scanner':
+    if app.config['mode'] != 'scanner' or not enabled_only:
         out.update({
-            'postprocessing': [name for name, cls in plugins.iteritems()
-                               if issubclass(cls, plugin.ProcessHooksMixin)],
-            'output': [name for name, cls in plugins.iteritems()
-                       if issubclass(cls, plugin.OutputHooksMixin)]
+            'postprocessing': get_kind(plugin.ProcessHooksMixin),
+            'output': get_kind(plugin.OutputHooksMixin)
         })
     return out
 
@@ -363,25 +373,22 @@ def restrict_to_modes(*modes):
     return decorator
 
 
-@app.route('/api/plugins')
-def get_available_plugins():
-    """ Get names of available and activated postprocessing and output plugins.
+@app.route('/api/plugins/enabled')
+def get_enabled_plugins():
+    """ Get names of available and activated plugins.
 
     :resheader Content-Type:        :mimetype:`application/json`
-    :>json array postprocessing:    List of postprocessing plugin names
-    :>json array output:            List of output plugin names
     """
-    exts = list(pkg_resources.iter_entry_points('spreadsplug.hooks'))
-    activated = app.config['default_config']['plugins'].get()
-    post_plugins = sorted(
-        [ext.name for ext in exts if ext.name in activated and
-         issubclass(ext.load(), plugin.ProcessHooksMixin)],
-        key=lambda x: activated.index(x))
-    return jsonify({
-        'postprocessing': post_plugins,
-        'output': [ext.name for ext in exts if ext.name in activated and
-                   issubclass(ext.load(), plugin.OutputHooksMixin)]
-    })
+    return jsonify(_list_plugins())
+
+
+@app.route('/api/plugins/all')
+def get_all_plugins():
+    """ Get names of all available plugins.
+
+    :resheader Content-Type:        :mimetype:`application/json`
+    """
+    return jsonify(_list_plugins(enabled_only=False))
 
 
 @app.route('/api/templates')

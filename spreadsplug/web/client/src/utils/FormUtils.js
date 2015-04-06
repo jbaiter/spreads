@@ -22,11 +22,7 @@ export function getFieldFromConfigTemplate(tmpl) {
   if (valType === "object") {
     // Must be an array, since we don't allow maps as values.
     if (tmpl.selectable) {
-      let opts = {};
-      tmpl.value.forEach((val) => {
-        opts.val = val;
-      });
-      return t.enums(opts);
+      return t.enums.of(tmpl.value);
     } else {
       return t.list(TYPE_MAP[typeof tmpl.value[0]]);
     }

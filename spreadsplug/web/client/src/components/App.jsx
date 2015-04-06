@@ -56,9 +56,9 @@ export default React.createClass({
                 {this.state.numUnreadErrors > 0 &&
                   <Badge className="num-unread">{this.state.numUnreadErrors}</Badge>}
               </NavItemLink>
-              <NavItem eventKey={2} to="preferences">
+              <NavItemLink eventKey={2} to="preferences">
                 <Icon name="cog" /> Preferences
-              </NavItem>
+              </NavItemLink>
               <ModalTrigger modal={<AboutModal version={this.state.version} />}>
                 <NavItem eventKey={3}>
                   <Icon name="info-circle" /> About

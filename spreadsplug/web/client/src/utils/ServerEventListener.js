@@ -1,5 +1,7 @@
 import throttle from "lodash/function/throttle";
-import {makeParams, fetchChecked, fetchJson} from "utils/WebAPIUtils.js"
+
+import alt from "alt";
+import {makeUrl, makeParams, fetchChecked, fetchJson} from "utils/WebAPIUtils.js"
 import WorkflowActions from "actions/WorkflowActions.js";
 import CaptureActions from "actions/CaptureActions.js";
 import SystemActions from "actions/SystemActions.js";
@@ -47,6 +49,8 @@ export default class ServerEventListener {
     this.checkOnline = throttle(() => {
       fetchChecked("/", {method: "head"})
         .then(() => {
+          fetchJson(makeUrl("/api", "bootstrap"))
+            .then((data) => alt.bootstrap(JSON.stringify(data)));
           SystemActions.reconnected();
           this.connect();
         })

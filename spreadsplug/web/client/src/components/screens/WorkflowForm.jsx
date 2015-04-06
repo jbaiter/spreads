@@ -5,8 +5,8 @@ import ListenerMixin from "alt/mixins/ListenerMixin";
 
 import alt from "alt";
 import {makeUrl, fetchJson} from "utils/WebAPIUtils.js";
-import getWorkflowConfigSchema from "forms/schemata/workflowConfigSchema.js";
-import getWorkflowMetadataSchema from "forms/schemata/workflowMetadataSchema.js";
+import getConfigSchema from "forms/schemata/configSchema.js";
+import getMetadataSchema from "forms/schemata/metadataSchema.js";
 import AutocompleteTextboxTemplate from "forms/templates/AutocompleteTextboxTemplate.jsx";
 import ProposalModal from "components/modals/ProposalModal.jsx";
 import WorkflowActions from "actions/WorkflowActions.js";
@@ -36,12 +36,12 @@ export default React.createClass({
       workflowStore.getState()[this.props.params.id] :
       {config: {plugins: []}, metadata: {}};
     // TODO: Load default config instead
-    const {plugins, configTemplates, metadataSchema} = appStateStore.getState();
+    const {enabledPlugins, configTemplates, metadataSchema} = appStateStore.getState();
     return {
       configValues: config,
       metadataValues: metadata,
       configTemplates,
-      availablePlugins: plugins,
+      availablePlugins: enabledPlugins,
       metadataSchema,
       proposedMetadata: null,
       autofilled: false
@@ -51,6 +51,8 @@ export default React.createClass({
   handleSubmit() {
     const data = {metadata: this.state.metadataValues,
                   config: this.state.configValues};
+    actionListener.addActionListener(WorkflowActions.remotelyCreated, this.handleCreated);
+    actionListener.addActionListener(WorkflowActions.actionFailed, this.handleCreateFailed);
     if (this.props.params.id) {
       WorkflowActions.update(data);
     } else {
@@ -59,13 +61,11 @@ export default React.createClass({
   },
 
   handleAppStateChange() {
-    const {plugins, templates} = appStateStore.getState();
+    const {enabledPlugins, templates} = appStateStore.getState();
     this.setState({
       configTemplates: templates,
-      availablePlugins: plugins
+      availablePlugins: enabledPlugins
     });
-    actionListener.addActionListener(WorkflowActions.remotelyCreated, this.handleCreated);
-    actionListener.addActionListener(WorkflowActions.actionFailed, this.handleCreateFailed);
   },
 
   handleConfigChange(value) {
@@ -98,6 +98,7 @@ export default React.createClass({
     // NOTE: We can somewhat safely do this comparisons, since titles are
     // expected to be unique on the backend
     if (remoteData.metadata.title === this.metadataValues.title) {
+      actionListener.removeAllActionListeners();
       // TODO: Create that route
       //this.context.router.transitionTo("capture", {workflowId: remoteData.id});
       this.context.router.transitionTo("home");
@@ -110,14 +111,14 @@ export default React.createClass({
   },
 
   render() {
-    const configSchema = getWorkflowConfigSchema({
+    const configSchema = getConfigSchema({
       currentValues: this.state.configValues,
       availablePlugins: this.state.availablePlugins,
       templates: this.state.configTemplates
     });
     const configStructs = configSchema.structs;
     const configOptions = {fields: configSchema.fieldConfig};
-    const metaSchema = getWorkflowMetadataSchema(this.state.metadataSchema);
+    const metaSchema = getMetadataSchema(this.state.metadataSchema);
 
     // Enable autocompletion for book titles
     if (metaSchema.structs.hasOwnProperty("title")) {

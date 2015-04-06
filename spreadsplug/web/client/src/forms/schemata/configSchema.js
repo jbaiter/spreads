@@ -5,7 +5,12 @@ import values from "lodash/object/values";
 import {checkDependency, getFieldFromConfigTemplate} from "utils/FormUtils";
 import CustomSelectTemplate from "forms/templates/CustomSelectTemplate";
 
-export default function getWorkflowConfigSchema({currentValues, availablePlugins, templates}) {
+export default function getConfigSchema({currentValues, availablePlugins, templates}) {
+  each(availablePlugins, (value, key) => {
+    if (key === "subcommand") {
+      availablePlugins[key] = value.filter((name) => name !== "web");
+    }
+  });
   const allPlugins = [].concat(...values(availablePlugins));
   let schema = {
     structs: {
