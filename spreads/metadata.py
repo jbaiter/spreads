@@ -80,7 +80,7 @@ def get_isbn_metadata(isbn):
     :rtype:         dict or `None` if ISBN is not valid or does not exist
     """
     try:
-        rv = isbnlib.meta(isbn)
+        rv = isbnlib.meta(str(isbn))
         if rv:
             return _format_isbnlib(rv)
     except isbnlib.NotValidISBNError:
