@@ -2,58 +2,19 @@ import React from "react";
 import t from "tcomb-form";
 import ActionListeners from "alt/utils/ActionListeners";
 import ListenerMixin from "alt/mixins/ListenerMixin";
-import map from "lodash/collection/map";
-import {Modal, Button} from "react-bootstrap";
 
 import alt from "../alt";
 import {makeUrl, fetchJson} from "../utils/WebAPIUtils.js";
 import getWorkflowConfigSchema from "../forms/schemata/workflowConfigSchema.js";
 import getWorkflowMetadataSchema from "../forms/schemata/workflowMetadataSchema.js";
 import AutocompleteTextboxTemplate from "../forms/templates/AutocompleteTextboxTemplate.jsx";
+import ProposalModal from "./modals/ProposalModal.jsx";
 import WorkflowActions from "../actions/WorkflowActions.js";
 import workflowStore from "../stores/WorkflowStore.js";
 import appStateStore from "../stores/AppStateStore.js";
-import Icon from "./Icon.jsx";
 
 const {PropTypes} = React;
 const actionListener = new ActionListeners(alt);
-
-const ProposalModal = React.createClass({
-  displayName: "ProposalModal",
-  propTypes: {
-    proposedData: PropTypes.object,
-    onConfirm: PropTypes.func,
-    onCancel: PropTypes.func
-  },
-
-  render() {
-    return (
-      <Modal {...this.props} bsStyle="primary" title="Automaticall fill metadata?"
-             onRequestHide={this.props.onCancel}>
-        <div className="modal-body">
-          <p>
-            We have found a match for the ISBN you entered.
-            Do you want to automically fill in the other fields?
-          </p>
-          <dl>
-          {[].concat(...map(this.props.proposedData, (value, key) => [
-            <dt key={"term-" + key}>{key}</dt>,
-            <dd key={"def-" + key}>{value}</dd>
-          ]))}
-          </dl>
-        </div>
-        <div className="modal-footer">
-          <Button bsStyle="primary" onClick={this.props.onConfirm}>
-            <Icon name="tick" /> Confirm
-          </Button>
-          <Button bsStyle="default" onClick={this.props.onCancel}>
-            <Icon name="cross" /> Cancel
-          </Button>
-        </div>
-      </Modal>
-    );
-  }
-});
 
 export default React.createClass({
   displayName: "WorkflowForm",

@@ -5,8 +5,8 @@ import {RouteHandler, Link} from "react-router";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 
 import Icon from "./Icon.jsx";
-import AboutModal from "./AboutModal.jsx";
-import ShutdownModal from "./ShutdownModal.jsx";
+import AboutModal from "./modals/AboutModal.jsx";
+import ShutdownModal from "./modals/ShutdownModal.jsx";
 import appStateStore from "../stores/AppStateStore.js";
 import loggingStore from "../stores/LoggingStore.js";
 

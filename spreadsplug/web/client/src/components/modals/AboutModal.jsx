@@ -1,6 +1,6 @@
 import React from "react";
 import {Modal, Button} from "react-bootstrap";
-import LOGO_URL from "../../../../../doc/_static/logo.png";
+import LOGO_URL from "../../../../../../doc/_static/logo.png";
 
 const {PropTypes} = React;
 

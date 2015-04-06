@@ -1,6 +1,6 @@
 import React from "react";
 import {Modal, Button} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "../Icon.jsx";
 import SystemActions from "actions/SystemActions";
 
 export default React.createClass({
