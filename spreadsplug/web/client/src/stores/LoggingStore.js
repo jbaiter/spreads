@@ -1,5 +1,5 @@
-import alt from "../alt";
-import LoggingActions from "../actions/LoggingActions.js";
+import alt from "alt";
+import LoggingActions from "actions/LoggingActions.js";
 
 class LoggingStore {
   constructor() {

@@ -3,15 +3,15 @@ import t from "tcomb-form";
 import ActionListeners from "alt/utils/ActionListeners";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 
-import alt from "../alt";
-import {makeUrl, fetchJson} from "../utils/WebAPIUtils.js";
-import getWorkflowConfigSchema from "../forms/schemata/workflowConfigSchema.js";
-import getWorkflowMetadataSchema from "../forms/schemata/workflowMetadataSchema.js";
-import AutocompleteTextboxTemplate from "../forms/templates/AutocompleteTextboxTemplate.jsx";
-import ProposalModal from "./modals/ProposalModal.jsx";
-import WorkflowActions from "../actions/WorkflowActions.js";
-import workflowStore from "../stores/WorkflowStore.js";
-import appStateStore from "../stores/AppStateStore.js";
+import alt from "alt";
+import {makeUrl, fetchJson} from "utils/WebAPIUtils.js";
+import getWorkflowConfigSchema from "forms/schemata/workflowConfigSchema.js";
+import getWorkflowMetadataSchema from "forms/schemata/workflowMetadataSchema.js";
+import AutocompleteTextboxTemplate from "forms/templates/AutocompleteTextboxTemplate.jsx";
+import ProposalModal from "components/modals/ProposalModal.jsx";
+import WorkflowActions from "actions/WorkflowActions.js";
+import workflowStore from "stores/WorkflowStore.js";
+import appStateStore from "stores/AppStateStore.js";
 
 const {PropTypes} = React;
 const actionListener = new ActionListeners(alt);

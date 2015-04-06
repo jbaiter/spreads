@@ -3,11 +3,11 @@ import {Input, Button, Table, Pager, PageItem} from "react-bootstrap";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 import map from "lodash/collection/map";
 
-import Icon from "./Icon.jsx";
-import Media from "./Media.jsx";
-import {getImageUrl} from "../utils/WebAPIUtils";
-import workflowStore from "../stores/WorkflowStore";
-import pageStore from "../stores/PageStore";
+import Icon from "components/utility/Icon.jsx";
+import Media from "components/utility/Media.jsx";
+import {getImageUrl} from "utils/WebAPIUtils";
+import workflowStore from "stores/WorkflowStore";
+import pageStore from "stores/PageStore";
 
 const {PropTypes} = React;
 

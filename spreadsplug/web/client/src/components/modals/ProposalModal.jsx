@@ -1,7 +1,7 @@
 import React from "react";
 import {Modal, Button} from "react-bootstrap";
 import map from "lodash/collection/map";
-import Icon from "../Icon.jsx";
+import Icon from "components/utility/Icon.jsx";
 
 const {PropTypes} = React;
 

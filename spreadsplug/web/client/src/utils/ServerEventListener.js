@@ -1,9 +1,9 @@
 import throttle from "lodash/function/throttle";
-import {makeParams, fetchChecked, fetchJson} from "../utils/WebAPIUtils.js"
-import WorkflowActions from "../actions/WorkflowActions.js";
-import CaptureActions from "../actions/CaptureActions.js";
-import SystemActions from "../actions/SystemActions.js";
-import LoggingActions from "../actions/LoggingActions.js";
+import {makeParams, fetchChecked, fetchJson} from "utils/WebAPIUtils.js"
+import WorkflowActions from "actions/WorkflowActions.js";
+import CaptureActions from "actions/CaptureActions.js";
+import SystemActions from "actions/SystemActions.js";
+import LoggingActions from "actions/LoggingActions.js";
 
 const ACTION_MAPPING = {
   "workflow:removed": WorkflowActions.remotelyDeleted,

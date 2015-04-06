@@ -1,6 +1,6 @@
 import React from "react";
 
-import AutocompleteTextbox from "../../components/AutocompleteTextbox.jsx";
+import AutocompleteTextbox from "components/utility/AutocompleteTextbox.jsx";
 
 export default function AutocompleteTextboxTemplate(locals) {
   function handleChange(selectedItem) {

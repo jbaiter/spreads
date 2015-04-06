@@ -1,5 +1,5 @@
-import {makeJsonRequest, makeUrl as _makeUrl} from "../utils/WebAPIUtils.js";
-import alt from "../alt";
+import {makeJsonRequest, makeUrl as _makeUrl} from "utils/WebAPIUtils.js";
+import alt from "alt";
 
 const makeUrl = _makeUrl.bind(null, "/api/workflow");
 

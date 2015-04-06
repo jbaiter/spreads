@@ -1,5 +1,5 @@
-import {makeJsonRequest} from "../utils/WebAPIUtils.js";
-import alt from "../alt";
+import {makeJsonRequest} from "utils/WebAPIUtils.js";
+import alt from "alt";
 
 class ConfigActions {
   constructor() {

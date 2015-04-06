@@ -1,6 +1,6 @@
-import alt from "../alt";
-import WorkflowActions from "../actions/WorkflowActions";
-import PageActions from "../actions/PageActions";
+import alt from "alt";
+import WorkflowActions from "actions/WorkflowActions";
+import PageActions from "actions/PageActions";
 
 class PageStore {
   constructor() {

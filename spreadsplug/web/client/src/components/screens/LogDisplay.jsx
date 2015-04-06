@@ -2,8 +2,8 @@ import React from "react";
 import {Input, Button, Table, Pager, PageItem} from "react-bootstrap";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 
-import Icon from "./Icon.jsx";
-import loggingStore from "../stores/LoggingStore";
+import Icon from "components/utility/Icon.jsx";
+import loggingStore from "stores/LoggingStore";
 
 const {PropTypes} = React;
 

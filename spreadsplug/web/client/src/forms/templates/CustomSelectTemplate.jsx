@@ -1,5 +1,5 @@
 import React from "react";
-import SectionedMultiSelect from "../../components/SectionedMultiSelect.jsx";
+import SectionedMultiSelect from "components/utility/SectionedMultiSelect.jsx";
 
 export default function CustomSelectTemplate({value, options, onChange, name,
                                               config: {categories}}) {

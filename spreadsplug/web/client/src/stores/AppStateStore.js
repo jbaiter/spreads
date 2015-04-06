@@ -1,6 +1,6 @@
-import alt from "../alt";
-import ConfigActions from "../actions/ConfigActions.js";
-import SystemActions from "../actions/SystemActions.js";
+import alt from "alt";
+import ConfigActions from "actions/ConfigActions.js";
+import SystemActions from "actions/SystemActions.js";
 
 class AppStateStore {
   constructor() {

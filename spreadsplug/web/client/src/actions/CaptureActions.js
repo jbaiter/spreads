@@ -1,5 +1,5 @@
-import alt from "../alt";
-import {makeUrl, makeParams, fetchJson} from "../utils/WebAPIUtils.js";
+import alt from "alt";
+import {makeUrl, makeParams, fetchJson} from "utils/WebAPIUtils.js";
 
 class CaptureActions {
   constructor() {

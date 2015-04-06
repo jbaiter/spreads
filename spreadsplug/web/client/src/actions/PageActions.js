@@ -1,5 +1,5 @@
-import {makeJsonRequest, makeUrl, makeParams} from "../utils/WebAPIUtils.js";
-import alt from "../alt";
+import {makeJsonRequest, makeUrl, makeParams} from "utils/WebAPIUtils.js";
+import alt from "alt";
 
 class PageActions {
   constructor() {

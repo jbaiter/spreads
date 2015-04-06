@@ -48,7 +48,7 @@ module.exports = {
   },
   resolve: {
     extensions: ["", ".js", ".json", ".jsx"],
-    modulesDirectories: ["node_modules", "src"]
+    modulesDirectories: ["src", "node_modules"]
   },
   eslint: {
     emitWarning: true

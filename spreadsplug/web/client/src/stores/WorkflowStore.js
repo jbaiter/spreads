@@ -1,5 +1,5 @@
-import alt from "../alt";
-import WorkflowActions from "../actions/WorkflowActions";
+import alt from "alt";
+import WorkflowActions from "actions/WorkflowActions";
 
 class WorkflowStore {
   constructor() {

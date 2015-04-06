@@ -4,11 +4,11 @@ import {NavItemLink} from "react-router-bootstrap";
 import {RouteHandler, Link} from "react-router";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 
-import Icon from "./Icon.jsx";
-import AboutModal from "./modals/AboutModal.jsx";
-import ShutdownModal from "./modals/ShutdownModal.jsx";
-import appStateStore from "../stores/AppStateStore.js";
-import loggingStore from "../stores/LoggingStore.js";
+import Icon from "components/utility/Icon.jsx";
+import AboutModal from "components/modals/AboutModal.jsx";
+import ShutdownModal from "components/modals/ShutdownModal.jsx";
+import appStateStore from "stores/AppStateStore.js";
+import loggingStore from "stores/LoggingStore.js";
 
 const {PropTypes} = React;
 

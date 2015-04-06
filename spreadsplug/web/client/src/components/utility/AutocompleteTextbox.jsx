@@ -3,7 +3,7 @@ const {PropTypes} = React;
 import each from "lodash/collection/each";
 import debounce from "lodash/function/debounce";
 
-import {makeUrl, makeParams, fetchJson} from "../utils/WebAPIUtils.js";
+import {makeUrl, makeParams, fetchJson} from "utils/WebAPIUtils.js";
 
 const Suggestion = React.createClass({
   displayName: "Suggestion",

@@ -1,5 +1,5 @@
-import {makeUrl} from "../utils/WebAPIUtils.js";
-import alt from "../alt";
+import {makeUrl} from "utils/WebAPIUtils.js";
+import alt from "alt";
 
 class SystemActions {
   constructor() {

@@ -2,8 +2,8 @@ import t from "tcomb-form";
 import each from "lodash/collection/each";
 import values from "lodash/object/values";
 
-import {checkDependency, getFieldFromConfigTemplate} from "../../utils/FormUtils";
-import CustomSelectTemplate from "../templates/CustomSelectTemplate";
+import {checkDependency, getFieldFromConfigTemplate} from "utils/FormUtils";
+import CustomSelectTemplate from "forms/templates/CustomSelectTemplate";
 
 export default function getWorkflowConfigSchema({currentValues, availablePlugins, templates}) {
   const allPlugins = [].concat(...values(availablePlugins));

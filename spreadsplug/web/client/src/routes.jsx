@@ -1,10 +1,10 @@
 import React from "react";
 import {Route, DefaultRoute} from "react-router";
 
-import App from "./components/App";
-import LogDisplay from "./components/LogDisplay";
-import WorkflowList from "./components/WorkflowList";
-import WorkflowForm from "./components/WorkflowForm"
+import App from "components/App";
+import LogDisplay from "components/screens/LogDisplay";
+import WorkflowList from "components/screens/WorkflowList";
+import WorkflowForm from "components/screens/WorkflowForm"
 
 export default (
     <Route name="home" path="/" handler={App}>
