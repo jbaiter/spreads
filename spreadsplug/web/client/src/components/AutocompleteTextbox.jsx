@@ -142,6 +142,7 @@ export default React.createClass({
                  value={this.props.value} ref="input" id={this.props.name + "-input"}
                  onChange={(e) => this.props.onChange({"title": e.target.value})}
                  onKeyUp={this.handleKeyUp} />
+          {this.state.call.latest > 0 && <span>pending</span>}
         </label>
         <SuggestionList suggestions={this.state.suggestions} onSelect={this.handleSelect} />
       </div>
