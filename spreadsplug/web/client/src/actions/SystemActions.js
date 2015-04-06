@@ -1,4 +1,3 @@
-import "whatwg-fetch";
 import {makeUrl} from "../utils/WebAPIUtils.js";
 import alt from "../alt";
 

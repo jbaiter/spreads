@@ -1,4 +1,3 @@
-import "whatwg-fetch";
 import {makeJsonRequest} from "../utils/WebAPIUtils.js";
 import alt from "../alt";
 

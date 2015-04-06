@@ -1,6 +1,5 @@
-import "whatwg-fetch";
 import throttle from "lodash/function/throttle";
-import makeParams from "../utils/WebAPIUtils.js"
+import {makeParams, fetchChecked, fetchJson} from "../utils/WebAPIUtils.js"
 import WorkflowActions from "../actions/WorkflowActions.js";
 import CaptureActions from "../actions/CaptureActions.js";
 import SystemActions from "../actions/SystemActions.js";
@@ -28,9 +27,9 @@ class Poller {
     if (this.cursor) {
       args.cursor = this.cursor;
     }
-    fetch("/api/poll" + makeParams(args), {method: "post"})
-      .then((resp) => {
-        this.onEvents(this.newEvents(resp.json()));
+    fetchJson("/api/poll" + makeParams(args), {method: "post"})
+      .then((data) => {
+        this.onEvents(this.newEvents(data));
         window.setTimeout(this.doPoll, 0);
       }).catch(this.onError);
   }
@@ -46,7 +45,7 @@ class Poller {
 export default class ServerEventListener {
   constructor() {
     this.checkOnline = throttle(() => {
-      fetch("/", {method: "head"})
+      fetchChecked("/", {method: "head"})
         .then(() => {
           SystemActions.reconnected();
           this.connect();

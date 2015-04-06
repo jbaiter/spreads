@@ -1,7 +1,5 @@
-import "whatwg-fetch";
-
 import alt from "../alt";
-import {makeUrl, makeParams} from "../utils/WebAPIUtils.js";
+import {makeUrl, makeParams, fetchJson} from "../utils/WebAPIUtils.js";
 
 class CaptureActions {
   constructor() {
@@ -10,7 +8,7 @@ class CaptureActions {
 
   prepare({workflowId, reset}) {
     this.dispatch();
-    fetch(
+    fetchJson(
       makeUrl("/api/workflow", workflowId,
               "prepare_capture" + makeParams({reset: reset})),
       {method: "post"})
@@ -19,7 +17,7 @@ class CaptureActions {
   }
 
   trigger({workflowId, retake}) {
-    fetch(
+    fetchJson(
       makeUrl("/api/workflow", workflowId,
               "capture" + makeParams({retake: retake})),
       {method: "post"})
@@ -27,7 +25,7 @@ class CaptureActions {
   }
 
   finish({workflowId}) {
-    fetch(makeUrl(
+    fetchJson(makeUrl(
       "/api/workflow", workflowId, "finish_capture"),
       {method: "post"})
       .then(() => this.actions.finished)

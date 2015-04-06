@@ -3,7 +3,7 @@ const {PropTypes} = React;
 import each from "lodash/collection/each";
 import debounce from "lodash/function/debounce";
 
-import {makeUrl, makeParams} from "../utils/WebAPIUtils.js";
+import {makeUrl, makeParams, fetchJson} from "../utils/WebAPIUtils.js";
 
 const Suggestion = React.createClass({
   displayName: "Suggestion",
@@ -57,6 +57,12 @@ export default React.createClass({
   },
 
   componentDidMount() {
+    // TODO: Find a solution without debounce
+    // Ideally we would just keep a reference to the current request and
+    // cancel it in case the user enters new data.
+    // Unfortunately, this is currently not feasible with the `fetch` API,
+    // see the discussion here for more context:
+    // https://github.com/whatwg/fetch/issues/27
     this.makeCall = debounce(this.makeCall, 500);
   },
 
@@ -71,18 +77,17 @@ export default React.createClass({
   },
 
   makeCall(term, current) {
-    fetch(makeUrl("/api", "isbn") + makeParams({q: term}))
-      .then((resp) => resp.json()).then((json) => {
+    fetchJson(makeUrl("/api", "isbn") + makeParams({q: term}))
+      .then((json) => {
         if (current === this.state.call.latest) {
-          const newPriority = this.state.call.latest - 1;
           this.setState({
             suggestions: json.results,
             lastTerm: this.state.call.term,
-            call: {latest: newPriority,
+            call: {latest: 0,
                     term: ""}
           });
         }
-      }).catch((error) => { // eslint-disable-line
+      }).catch(() => {
         this.setState({completeEnabled: false});
       });
   },
