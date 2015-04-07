@@ -22,6 +22,7 @@ import React from "react";
 const {PropTypes} = React;
 import each from "lodash/collection/each";
 import debounce from "lodash/function/debounce";
+import classNames from "classnames";
 
 import {makeUrl, makeParams, fetchJson} from "utils/WebAPIUtils.js";
 
@@ -154,16 +155,21 @@ export default React.createClass({
         this.state.call.term !== this.state.lastTerm && this.state.completeEnabled) {
       this.makeCall(this.state.call.term, this.state.call.latest);
     }
+    const containerClasses = classNames({
+      "form-group": true,
+      "has-feedback": this.state.call.latest > 0
+    });
     return (
-      <div>
-        <label htmlFor={this.props.name + "-input"}>
+      <div className={containerClasses}>
+        <label className="control-label text-capitalize" htmlFor={this.props.name + "-input"}>
           {this.props.name}
-          <input type="text" placeholder="Enter a search-term to get a list of suggestions"
-                 value={this.props.value} ref="input" id={this.props.name + "-input"}
-                 onChange={(e) => this.props.onChange({"title": e.target.value})}
-                 onKeyUp={this.handleKeyUp} />
-          {this.state.call.latest > 0 && <span>pending</span>}
         </label>
+        <input type="text" placeholder="Enter a search-term to get a list of suggestions"
+               value={this.props.value} ref="input" id={this.props.name + "-input"}
+               onChange={(e) => this.props.onChange({"title": e.target.value})}
+               onKeyUp={this.handleKeyUp} className="form-control"/>
+        {this.state.call.latest > 0 &&
+          <span className="form-control-feedback fa fa-circle-o-notch fa-spin" />}
         <SuggestionList suggestions={this.state.suggestions} onSelect={this.handleSelect} />
       </div>
     );
