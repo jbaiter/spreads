@@ -53,7 +53,7 @@ export default React.createClass({
 
   getInitialState() {
     const {config, metadata} = this.props.params.id ?
-      workflowStore.getState()[this.props.params.id] :
+      workflowStore.getState().workflows[this.props.params.id] :
       {config: null, metadata: {}};
     const {config: defaultConfig, enabledPlugins, configTemplates,
            metadataSchema} = appStateStore.getState();
@@ -89,29 +89,26 @@ export default React.createClass({
   },
 
   handleConfigChange(value) {
-    let newData = this.state.configValues;
-    Object.assign(newData, value);
-    this.setState({configValues: newData});
+    this.setState({configValues: value});
   },
 
   handleMetadataChange(value, fromAutocomplete=false) {
-    let newData = this.state.metadataValues;
-    Object.assign(newData, value);
-    if (newData.identifier && !fromAutocomplete &&
-        (!this.state.metadataValues.identifier !== newData.identifier)) {
+    if (value.identifier && !fromAutocomplete &&
+        (this.state.metadataValues.identifier !== value.identifier)) {
       let isbnNo = null;
-      newData.identifier.forEach((identifier) => {
+      value.identifier.forEach((identifier) => {
         if (identifier && identifier.toLowerCase().startsWith("isbn:")) {
           isbnNo = identifier.toLowerCase().substring(5);
         }
       });
       if (isbnNo) {
+        // TODO: On error, set field validation for identifier to invalid
         fetchJson(makeUrl("/api", "isbn", isbnNo))
           .then((data) => this.setState({proposedMetadata: data}))
           .catch((error) => console.log(error));
       }
     }
-    this.setState({metadataValues: newData});
+    this.setState({metadataValues: value});
   },
 
   handleCreated(remoteData) {
