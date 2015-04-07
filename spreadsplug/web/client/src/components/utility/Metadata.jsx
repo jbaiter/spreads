@@ -19,41 +19,45 @@
  */
 
 import React from "react";
-import {Modal, Button} from "react-bootstrap";
 import map from "lodash/collection/map";
-import Icon from "components/utility/Icon.jsx";
-import Metadata from "components/utility/Metadata.jsx";
 
 const {PropTypes} = React;
 
 export default React.createClass({
-  displayName: "ProposalModal",
+  displayName: "Metadata",
   propTypes: {
-    proposedData: PropTypes.object,
-    onConfirm: PropTypes.func,
-    onCancel: PropTypes.func
+    metadata: PropTypes.object.isRequired
   },
 
   render() {
+    let definitions = [].concat(...map(this.props.metadata, (value, key) => {
+      let elems = [
+        <dt className="text-capitalize" key={["term", key].join("-")}>
+          {key}
+        </dt>
+      ];
+      if (Array.isArray(value)) {
+        let lis = [];
+        for (let [idx, val] of value.entries()) {
+          lis.push(<li key={["def", key, idx].join("-")}>{val}</li>);
+        }
+        elems.push(
+          <dd key={["def", key].join("-")}>
+            <ul className="list-unstyled">{lis}</ul>
+          </dd>);
+      } else {
+        elems.push(
+          <dd key={["def", key].join("-")}>
+            {value}
+          </dd>);
+      }
+      return elems;
+    }));
+
     return (
-      <Modal {...this.props} bsStyle="primary" title="Automaticall fill metadata?"
-             onRequestHide={this.props.onCancel}>
-        <div className="modal-body">
-          <p>
-            We have found a match for the ISBN you entered.
-            Do you want to automically fill in the other fields?
-          </p>
-          <Metadata metadata={this.props.proposedData} />
-        </div>
-        <div className="modal-footer">
-          <Button bsStyle="primary" onClick={this.props.onConfirm}>
-            <Icon name="tick" /> Confirm
-          </Button>
-          <Button bsStyle="default" onClick={this.props.onCancel}>
-            <Icon name="cross" /> Cancel
-          </Button>
-        </div>
-      </Modal>
+      <dl className="dl-horizontal">
+        {definitions}
+      </dl>
     );
   }
 });
