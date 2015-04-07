@@ -52,16 +52,12 @@ export function fetchChecked(url, options={}) {
 
 export function fetchJson(url, options) {
   return fetch(url, options)
-    .then((resp) => resp.json())
-    .then((json) => {
-      if (json.hasOwnProperty("payload") && json.hasOwnProperty("type")) {
-        // We have a JSON error object.
-        // Ideally we'd just check the response status code, but I haven't
-        // found a way to get to both the code and the actual JSON data with
-        // fetch's promise-based API yet...
-        return Promise.reject(json);
-      } else {
+    .then((resp) => {
+      const json = resp.json();
+      if (resp.status >= 200 && resp.status < 300) {
         return Promise.resolve(json);
+      } else {
+        return json.then((data) => Promise.reject(data));
       }
     });
 }
