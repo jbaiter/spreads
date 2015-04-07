@@ -13,7 +13,7 @@
     "expose-loader": "^0.6.0",
     "file-loader": "^0.8.1",
     "jsx-loader": "^0.12.2",
-    "node-sass": "^3.0.0-pre",
+    "node-sass": "^3.0.0-beta.5",
     "raw-loader": "^0.5.1",
     "react-hot-loader": "^1.2.4",
     "react-tools": "^0.13.1",

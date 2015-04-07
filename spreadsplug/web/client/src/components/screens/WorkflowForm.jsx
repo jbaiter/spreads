@@ -166,7 +166,7 @@ export default React.createClass({
               {metadataValues: this.state.proposedMetadata,
                proposedMetadata: null})}
             onCancel={() => this.setState({proposedMetadata: null})} />}
-        <form className="form-horizontal" onSubmit={this.handleSubmit}>
+        <form onSubmit={this.handleSubmit}>
           <t.form.Form type={t.struct(metaStructs)} options={metaOptions}
                       value={this.state.metadataValues} ref="metadataForm"
                       onChange={this.handleMetadataChange}/>
