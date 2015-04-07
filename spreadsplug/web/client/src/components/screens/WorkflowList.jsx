@@ -19,6 +19,7 @@
  */
 
 import React from "react";
+import {Link} from "react-router";
 import {Input, Button, Table, Pager, PageItem} from "react-bootstrap";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 import map from "lodash/collection/map";
@@ -43,9 +44,20 @@ const WorkflowItem = React.createClass({
       getImageUrl({workflowId: this.props.workflow.id,
                    captureNum: this.props.pages[0].capture_num,
                    thumbnail: true}) : null;
+    const mediaElem = (
+      <Link to="view-workflow" params={{id: this.props.workflow.id}}>
+        <img src={imageUrl} />
+      </Link>);
     return (
-      <Media media={<img src={imageUrl} />}>
-        <h3>{this.props.workflow.metadata.title}</h3>
+      <Media media={mediaElem}>
+        <h3>
+          <Link to="view-workflow" params={{id: this.props.workflow.id}}>
+            {this.props.workflow.metadata.title}
+          </Link>
+        </h3>
+        <ul>
+          <li><Icon name="file-o"/> {Object.keys(this.props.pages).length}</li>
+        </ul>
       </Media>
     );
   }

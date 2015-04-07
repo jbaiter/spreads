@@ -25,7 +25,8 @@ import App from "components/App";
 import Preferences from "components/screens/Preferences";
 import LogDisplay from "components/screens/LogDisplay";
 import WorkflowList from "components/screens/WorkflowList";
-import WorkflowForm from "components/screens/WorkflowForm"
+import WorkflowForm from "components/screens/WorkflowForm";
+import WorkflowDetails from "components/screens/WorkflowDetails";
 
 export default (
     <Route name="home" path="/" handler={App}>
@@ -34,8 +35,9 @@ export default (
         <Route name="preferences" path="/preferences" handler={Preferences} />
         <Route path="workflow">
           <DefaultRoute handler={WorkflowList} />
-          <Route name="new-workflow" path="/new" handler={WorkflowForm} />
-          <Route name="edit-workflow" path="/:id/edit" handler={WorkflowForm} />
+          <Route name="new-workflow" path="new" handler={WorkflowForm} />
+          <Route name="view-workflow" path=":id" handler={WorkflowDetails} />
+          <Route name="edit-workflow" path=":id/edit" handler={WorkflowForm} />
         </Route>
     </Route>
 );
