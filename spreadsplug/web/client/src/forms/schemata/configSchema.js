@@ -5,10 +5,12 @@ import values from "lodash/object/values";
 import {checkDependency, getFieldFromConfigTemplate} from "utils/FormUtils";
 import CustomSelectTemplate from "forms/templates/CustomSelectTemplate";
 
-export default function getConfigSchema({currentValues, availablePlugins, templates}) {
+export default function getConfigSchema({currentValues, availablePlugins, templates,
+                                         blacklistedCategories=[]}) {
   each(availablePlugins, (value, key) => {
-    if (key === "subcommand") {
-      availablePlugins[key] = value.filter((name) => name !== "web");
+    if (blacklistedCategories.indexOf(key) !== -1) {
+      availablePlugins[key].forEach((key) => delete templates[key]);
+      delete availablePlugins[key];
     }
   });
   const allPlugins = [].concat(...values(availablePlugins));

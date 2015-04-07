@@ -22,11 +22,11 @@ export default React.createClass({
   },
 
   getInitialState() {
-    const {config, availablePlugins, configTemplates} = appStateStore.getState();
+    const {config, allPlugins, configTemplates} = appStateStore.getState();
     return {
       config: config,
       templates: configTemplates,
-      availablePlugins: availablePlugins
+      allPlugins: allPlugins
     };
   },
 
@@ -35,18 +35,19 @@ export default React.createClass({
   },
 
   handleAppStateChange() {
-    const {config, availablePlugins, configTemplates} = appStateStore.getState();
+    const {config, allPlugins, configTemplates} = appStateStore.getState();
     this.setState({
       config: config,
       templates: configTemplates,
-      availablePlugins: availablePlugins
+      allPlugins: allPlugins
     });
   },
 
   render() {
+    // TODO: Add possibility to configure driver
     const schema = getConfigSchema({
       currentValues: this.state.config,
-      availablePlugins: this.state.availablePlugins,
+      availablePlugins: this.state.allPlugins,
       templates: this.state.templates
     });
     const structs = schema.structs;

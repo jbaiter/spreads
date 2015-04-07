@@ -34,11 +34,11 @@ export default React.createClass({
   getInitialState() {
     const {config, metadata} = this.props.params.id ?
       workflowStore.getState()[this.props.params.id] :
-      {config: {plugins: []}, metadata: {}};
-    // TODO: Load default config instead
-    const {enabledPlugins, configTemplates, metadataSchema} = appStateStore.getState();
+      {config: null, metadata: {}};
+    const {config: defaultConfig, enabledPlugins, configTemplates,
+           metadataSchema} = appStateStore.getState();
     return {
-      configValues: config,
+      configValues: config || defaultConfig,
       metadataValues: metadata,
       configTemplates,
       availablePlugins: enabledPlugins,
@@ -114,7 +114,8 @@ export default React.createClass({
     const configSchema = getConfigSchema({
       currentValues: this.state.configValues,
       availablePlugins: this.state.availablePlugins,
-      templates: this.state.configTemplates
+      templates: this.state.configTemplates,
+      blacklistedCategories: ["core", "subcommand"]
     });
     const configStructs = configSchema.structs;
     const configOptions = {fields: configSchema.fieldConfig};
