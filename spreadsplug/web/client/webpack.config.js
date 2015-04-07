@@ -38,7 +38,9 @@ module.exports = {
   module: {
     loaders: [
       {test: require.resolve("react"), loader: "expose?React"},
-      {test: /\.js/, loaders: ["babel-loader?experimental&optional=runtime", "eslint-loader"], exclude: /node_modules/},
+      {test: /\.js$/, loaders: ["babel-loader?optional=runtime", "eslint-loader"], exclude: /node_modules/},
+      {test: /\.jsx$/, loaders: ["babel-loader?optional=runtime", "eslint-loader"], exclude: /node_modules/},
+      {test: /\.jsx$/, loaders: ["babel-loader?optional=runtime"], exclude: /client\/src/},
       {test: /\.css$/, loader: "style!css"},
       {test: /\.scss$/, loader: "style!css!sass"},
       {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&minetype=application/font-woff"},
