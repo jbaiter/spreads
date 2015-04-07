@@ -18,6 +18,10 @@
  * along with Spreads.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file Entrypoint for the application, sets up the Flux components and
+ *       initiates the router.
+ */
 import React from "react";
 import ReactRouter from "react-router";
 import fetch from "whatwg-fetch";
@@ -51,6 +55,10 @@ if (__DEV__) {
   alt.dispatcher.register(console.log.bind(console));
 }
 
+// When the client visits a route that the server does not know about, it
+// redirects from '/some/route' to '#/some/route' to indicate that the route
+// should be resolved client-side. We parse that route and push it to the
+// history stack, which will lead react-router to render the correct view.
 const pathRegex = /.*\/#(.*)/;
 if (pathRegex.test(window.location.href)) {
   const path = "/" + pathRegex.exec(window.location.href)[1];
