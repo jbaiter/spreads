@@ -50,3 +50,21 @@ export function getFieldFromConfigTemplate(tmpl) {
     return TYPE_MAP[valType];
   }
 }
+
+export const listTransformer = {
+  format(value) {
+    if (Array.isArray(value)) {
+      return value.map((itm) => `"${itm}"`).join(", ");
+    } else {
+      return value;
+    }
+  },
+
+  parse(str) {
+    if (str) {
+      return str.split(", ").map((itm) => itm.substring(1, itm.length-2));
+    } else {
+      return [];
+    }
+  }
+};

@@ -22,11 +22,14 @@ import t from "tcomb-form";
 import each from "lodash/collection/each";
 import values from "lodash/object/values";
 
-import {checkDependency, getFieldFromConfigTemplate} from "utils/FormUtils";
+import {checkDependency, getFieldFromConfigTemplate, listTransformer} from "utils/FormUtils";
 import CustomSelectTemplate from "forms/templates/CustomSelectTemplate";
 
 export default function getConfigSchema({currentValues, availablePlugins, templates,
                                          blacklistedCategories=[]}) {
+  if (blacklistedCategories.indexOf("core") !== -1) {
+    delete templates.core;
+  }
   each(availablePlugins, (value, key) => {
     if (blacklistedCategories.indexOf(key) !== -1) {
       availablePlugins[key].forEach((key) => delete templates[key]);
@@ -75,11 +78,13 @@ export default function getConfigSchema({currentValues, availablePlugins, templa
       const fieldType = getFieldFromConfigTemplate(data);
       kwargs[name] = fieldType;
       if (fieldType.name === "List") {
-        schema.fieldConfig[setName].fields[name] = {
-          disableAdd: true,
-          disableRemove: true,
-          disableOrder: true
-        };
+        Object.assign(
+          schema.fieldConfig[setName].fields[name],
+          {
+            factory: t.form.Textbox,
+            transformer: listTransformer,
+            help: [data.docstring, "Separate by comma"].join(". ")
+          });
       }
     });
     schema.structs[setName] = t.struct(kwargs);
