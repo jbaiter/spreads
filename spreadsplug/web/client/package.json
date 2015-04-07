@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "devDependencies": {
-    "babel-core": "^4.7.16",
+    "babel-core": "^5.0.9",
     "babel-eslint": "^2.0.2",
-    "babel-loader": "^4.2.0",
+    "babel-loader": "^5.0.0",
     "css-loader": "^0.9.1",
     "eslint": "^0.17.1",
     "eslint-loader": "^0.8.0",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "alt": "^0.14.5",
-    "babel-runtime": "^4.7.16",
+    "babel-runtime": "^5.0.9",
     "bootstrap-sass": "^3.3.4",
     "classnames": "^1.2.0",
     "font-awesome": "^4.3.0",
