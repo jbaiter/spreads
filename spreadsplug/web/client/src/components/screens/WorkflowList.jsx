@@ -23,9 +23,11 @@ import {Link} from "react-router";
 import {Input, Button, Table, Pager, PageItem} from "react-bootstrap";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 import map from "lodash/collection/map";
+import values from "lodash/object/values";
 
 import Icon from "components/utility/Icon.jsx";
 import Media from "components/utility/Media.jsx";
+import Pagination from "components/utility/Pagination";
 import {getImageUrl} from "utils/WebAPIUtils";
 import workflowStore from "stores/WorkflowStore";
 import pageStore from "stores/PageStore";
@@ -70,7 +72,9 @@ export default React.createClass({
   getInitialState() {
     return {
       workflows: workflowStore.getState().workflows,
-      pages: pageStore.getState().pages
+      pages: pageStore.getState().pages,
+      perPage: 5,
+      offset: 0
     };
   },
 
@@ -82,14 +86,25 @@ export default React.createClass({
     this.setState(this.getInitialState());
   },
 
+  handlePageChange(pageNum) {
+    this.setState({
+      offset: Math.floor((pageNum - 1) * this.state.perPage)
+    });
+  },
+
   render() {
-    const workflowItems = map(
-      this.state.workflows,
+    const {offset, perPage, workflows} = this.state;
+    const totalPages = Math.ceil(Object.keys(workflows).length / perPage);
+    const currentPage = Math.floor(offset / perPage) + 1;
+    const workflowItems = values(workflows).slice(offset, offset + perPage).map(
       wf => <WorkflowItem key={wf.id} workflow={wf} pages={this.state.pages[wf.id]} />);
     return (
       <div>
         <h1>Workflows</h1>
         <div>{workflowItems}</div>
+        {totalPages > 1 &&
+        <Pagination pageNum={currentPage} totalPages={totalPages}
+                    onPageChange={this.handlePageChange} />}
       </div>
     );
   }
