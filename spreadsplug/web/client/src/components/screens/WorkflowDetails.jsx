@@ -76,9 +76,8 @@ export default React.createClass({
   },
 
   render() {
-    // TODO: Paginate the pages display
     const {pages, pageOffset, perPage} = this.state;
-    const totalPages = Math.ceil(values(pages).length / perPage);
+    const totalPages = Math.ceil(Object.keys(pages).length / perPage);
     return (
       <div>
         <h3>Metadata</h3>

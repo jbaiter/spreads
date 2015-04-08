@@ -23,9 +23,20 @@ import {Input, Button, Table, Pager, PageItem} from "react-bootstrap";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 
 import Icon from "components/utility/Icon.jsx";
+import Pagination from "components/utility/Pagination";
 import loggingStore from "stores/LoggingStore";
 
 const {PropTypes} = React;
+
+const LEVEL_MAPPING = {
+  debug: 10,
+  info: 20,
+  warning: 30,
+  warn: 30,
+  error: 40,
+  critical: 50,
+  fatal: 50
+};
 
 const LogRecord = React.createClass({
   displayName: "LogRecord",
@@ -63,7 +74,12 @@ export default React.createClass({
   },
 
   getInitialState() {
-    return loggingStore.getState();
+    return {
+      records: loggingStore.getState().records,
+      perPage: 25,
+      offset: 0,
+      maxLevel: "warning"
+    };
   },
 
   componentDidMount() {
@@ -71,20 +87,41 @@ export default React.createClass({
   },
 
   onChange() {
-    this.setState(this.getInitialState());
+    this.setState({
+      records: this.getInitialState().records
+    });
+  },
+
+  handlePageChange(pageNum) {
+    this.setState({
+      offset: Math.floor((pageNum - 1) * this.state.perPage)
+    });
+  },
+
+  getPageNum() {
+    return Math.floor(this.state.offset / this.state.perPage) + 1;
   },
 
   render() {
+    const {offset, perPage} = this.state;
+    const filteredRecords = this.state.records.filter((rec) => {
+      return LEVEL_MAPPING[rec.level.toLowerCase()] >= LEVEL_MAPPING[this.state.maxLevel];
+    });
+    const recordsToShow = filteredRecords.slice(offset, offset + perPage);
+    const totalPages = Math.ceil(filteredRecords.length / perPage);
     return (
       <div>
         <h1>Application Log</h1>
-          <Input type="select" label="Loglevel">
+        <Input type="select" label="Verbosity" value={this.state.maxLevel}
+               onChange={(e) => this.setState({maxLevel: e.target.value})}>
+            <option value="critical">Critical</option>
             <option value="error">Error</option>
             <option value="warning">Warning</option>
             <option value="info">Info</option>
             <option value="debug">Debug</option>
           </Input>
-          <Input type="select">
+          <Input type="select" label="Record per page" value={this.state.perPage}
+                 onChange={(e) => this.setState({perPage: e.target.value | 0})}>
             <option value="10">10</option>
             <option value="25">25</option>
             <option value="50">50</option>
@@ -102,14 +139,13 @@ export default React.createClass({
             </tr>
           </thead>
           <tbody>
-            {this.state.records.map((record, idx) => {
-            return <LogRecord record={record} key={"record-" + idx} />;})}
+            {recordsToShow.map((record, idx) => {
+            return <LogRecord record={record} key={`record-${record.time}-${idx}`} />;})}
           </tbody>
         </Table>
-        <Pager>
-          <PageItem previous href="#">&larr; Previous Page</PageItem>
-          <PageItem next href="#">&rarr; Next Page</PageItem>
-        </Pager>
+        {totalPages > 1 &&
+        <Pagination pageNum={this.getPageNum()} totalPages={totalPages}
+                    onPageChange={this.handlePageChange} />}
       </div>
     );
   }

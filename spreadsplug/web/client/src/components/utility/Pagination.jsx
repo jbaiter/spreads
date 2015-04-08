@@ -75,7 +75,17 @@ export default React.createClass({
   },
 
   getButtonLabels() {
-    const {marginDisplay, rangeDisplay, totalPages, pageNum} = this.props;
+    let {marginDisplay, rangeDisplay, totalPages, pageNum} = this.props;
+
+    // Adjust settings for small page ranges
+    if (rangeDisplay > totalPages) {
+      marginDisplay = 0;
+      rangeDisplay = totalPages;
+    }
+    else if ((marginDisplay * 2 + rangeDisplay) > totalPages) {
+      marginDisplay = Math.floor((totalPages - rangeDisplay) / 2);
+    }
+
     // Build sub-ranges first
     const centerMargin = Math.ceil((rangeDisplay - 1) / 2);
     const leftNumbers = new Set(range(1, marginDisplay+1));
