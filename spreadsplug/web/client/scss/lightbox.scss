@@ -1,18 +1,60 @@
+@mixin overlay-link($initial-opacity, $font-size) {
+  cursor: pointer;
+  opacity: $initial-opacity;
+  -webkit-transition: opacity 0.5s;
+  -moz-transition: opacity 0.5s;
+  -o-transition: opacity 0.5s;
+  transition: opacity 0.5s;
+  color: #fff;
+  font-size: $font-size;
+  text-shadow: 2px 2px 4px #000;
+  filter: dropshadow(color=#000, offx=2, offy=2);
+
+  &:hover {
+    opacity: 1;
+    text-decoration: none;
+  }
+}
+
+@mixin fullscreen() {
+  &:-webkit-full-screen {
+    @content;
+  }
+  &:-mozilla-full-screen {
+    @content;
+  }
+  &:full-screen {
+    @content;
+  }
+}
+
 .lightbox {
-  &-container:-webkit-full-screen {
-    background-color: black;
-  }
-
-  &-container:-moz-full-screen {
-    background-color: black;
-  }
-
-  &-container:fullscreen {
-    background-color: black;
+  &-container {
+    @include fullscreen() {
+      background-color: black;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-content: center;
+      align-items: center;
+    }
   }
 
   &-content {
     position:relative;
+    text-align: center;
+    width: 100%;
+  }
+
+  .toggle-fullscreen {
+    @include overlay-link(0.25, 20px);
+    z-index: 200;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding-top: 15px;
+    padding-right: 15px;
+    text-align: right;
   }
 
   &-nav-overlay {
@@ -28,26 +70,14 @@
     align-items: center;
 
     a {
+      @include overlay-link(0.25, 30px);
+
       display: flex;
       align-content: center;
       align-items: center;
-      opacity: 0;
-      -webkit-transition: opacity 0.5s;
-      -moz-transition: opacity 0.5s;
-      -o-transition: opacity 0.5s;
-      transition: opacity 0.5s;
-      color:#fff;
-      font-size:30px;
-      text-shadow: 2px 2px 4px #000;
-      filter: dropshadow(color=#000, offx=2, offy=2);
-      z-index:100;
+      z-index: 100;
       width: 49%;
       height: 100%;
-
-      &:hover {
-        opacity: 1;
-        text-decoration: none;
-      }
 
       &.lightbox-nav-left {
         padding-left:15px;
@@ -64,9 +94,11 @@
   }
 
   .fullscreen-footer {
+    position: absolute;
+    bottom: 1em;
+    z-index: 200;
+    width: 100%;
     text-align: center;
-    background-color: black;
-    margin-top: 1em;
     opacity: 0.25;
     -webkit-transition: opacity 0.5s;
     -moz-transition: opacity 0.5s;

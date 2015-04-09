@@ -23,6 +23,7 @@ import {Modal, Button} from "react-bootstrap";
 import FullscreenMixin from "react-fullscreen-component";
 
 import Icon from "components/utility/Icon";
+import ResponsiveImage from "components/utility/ResponsiveImage";
 
 export default React.createClass({
   displayName: "LightboxModal",
@@ -48,10 +49,18 @@ export default React.createClass({
   getInitialState() {
     const idx = this.props.startId ?
       this.props.contentIds.indexOf(this.props.startId) : 0;
+    const content = this.convertContent(this.props.onContentChange(this.props.startId, false));
     return {
-      currentContentIdx: idx,
-      content: this.props.onContentChange(this.props.startId, false)
+      currentContentIdx: idx, content
     };
+  },
+
+  convertContent(content) {
+    if (content.main.type === "img") {
+      content.main = (<ResponsiveImage container={() => this.refs.container}
+                                       {...content.main.props} />);
+    }
+    return content;
   },
 
   toggleFullscreen(e) {
@@ -71,8 +80,8 @@ export default React.createClass({
       previousIdx = this.state.currentContentIdx - 1;
     }
     const id = this.props.contentIds[previousIdx];
-    this.setState({currentContentIdx: previousIdx,
-                   content: this.props.onContentChange(id, this.state.isFullscreen)});
+    const content = this.convertContent(this.props.onContentChange(id, this.state.isFullscreen));
+    this.setState({currentContentIdx: previousIdx, content});
   },
 
   handleNextClick() {
@@ -83,22 +92,20 @@ export default React.createClass({
       nextIdx = this.state.currentContentIdx + 1;
     }
     const id = this.props.contentIds[nextIdx];
-    this.setState({currentContentIdx: nextIdx,
-                   content: this.props.onContentChange(id, this.state.isFullscreen)});
+    const content = this.convertContent(this.props.onContentChange(id, this.state.isFullscreen));
+    this.setState({currentContentIdx: nextIdx, content});
   },
 
   onEnterFullscreen() {
     const id = this.props.contentIds[this.state.currentContentIdx];
-    this.setState({
-      content: this.props.onContentChange(id, true)
-    });
+    const content = this.convertContent(this.props.onContentChange(id, true));
+    this.setState({content});
   },
 
   onExitFullscreen() {
     const id = this.props.contentIds[this.state.currentContentIdx];
-    this.setState({
-      content: this.props.onContentChange(id, false)
-    });
+    const content = this.convertContent(this.props.onContentChange(id, false));
+    this.setState({content});
   },
 
   render() {
@@ -106,19 +113,14 @@ export default React.createClass({
     const {title, main, footer} = this.state.content;
     const viewPrevious = idx > 0 || doWrap;
     const viewNext = idx < (this.props.contentIds.length - 1) || doWrap;
-    const footerContainer = (
-      <div>
-        {footer}
-        <Button onClick={this.toggleFullscreen} active={this.state.isFullscreen}>
-          <Icon name="arrows-alt" /> Fullscreen
-        </Button>
-      </div>
-    );
     return (
       <Modal {...this.props} animation={true} title={title} className="lightbox">
         <div className="modal-body">
           <div className="lightbox-container" ref="container">
             <div className="lightbox-content">
+              <a className="toggle-fullscreen" onClick={this.toggleFullscreen}>
+                <Icon name={this.state.isFullscreen ? "close" : "expand"} />
+              </a>
               {main}
               <div className="lightbox-nav-overlay" ref="navOverlay">
                 <a className="lightbox-nav-left"
@@ -130,12 +132,12 @@ export default React.createClass({
                   {viewNext && <Icon name="chevron-right" />}
                 </a>
               </div>
+              {this.state.isFullscreen &&
+               <div className="fullscreen-footer">{footer}</div>}
             </div>
-            {this.state.isFullscreen &&
-             cloneElement(footerContainer, {className: "fullscreen-footer"})}
           </div>
         </div>
-        {cloneElement(footerContainer, {className: "modal-footer"})}
+        <div className="modal-footer">{footer}</div>
       </Modal>
     );
   }

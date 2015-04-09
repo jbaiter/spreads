@@ -43,9 +43,11 @@ import PageStore from "stores/PageStore";
 import AppStateStore from "stores/AppStateStore";
 
 import ServerEventListener from "utils/ServerEventListener.js";
+import {initCustomEvents} from "utils/DOMUtils.js";
 
 require("../scss/app.scss");
 
+initCustomEvents();
 alt.bootstrap(JSON.stringify(window.bootstrapData));
 
 const eventListener = new ServerEventListener();

@@ -1,0 +1,17 @@
+.responsive-image {
+  max-height: 100%;
+  max-width: 100%;
+  text-align: center;
+
+  img {
+    vertical-align: top;
+  }
+
+  &.portrait img {
+    max-height: 100%;
+  }
+
+  &.landscape img {
+    max-width: 100%;
+  }
+}

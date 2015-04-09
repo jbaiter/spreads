@@ -4,4 +4,5 @@ $fa-font-path: "../node_modules/font-awesome/fonts";
 $icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
 @import "../node_modules/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
 
-@import "lightbox.scss";
+@import "lightbox";
+@import "responsive-image";

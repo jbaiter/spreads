@@ -90,19 +90,21 @@ export default React.createClass({
       workflowId: this.state.workflow.id,
       captureNum: page.capture_num
     };
+    const fullImageUrl = getImageUrl(imageOpts);
     if (!isFullscreen) {
       imageOpts.width = 640;
     }
-    const imageUrl = getImageUrl(imageOpts);
+    const scaledImageUrl = getImageUrl(imageOpts);
 
     return {
       title: `Page ${page.page_label}`,
-      main: <img className="img-responsive" src={imageUrl} />,
+      main: <img src={scaledImageUrl} />,
       footer: (
         <ButtonGroup>
           <Button bsStyle="danger"><Icon name="trash-o" /> Delete</Button>
           <Button bsStyle="primary"><Icon name="crop" /> Crop</Button>
           <Button><Icon name="edit" /> Edit Metadata</Button>
+          <Button href={fullImageUrl} target="_blank"><Icon name="image" /> Full image</Button>
         </ButtonGroup>)
     };
   },
