@@ -47,12 +47,14 @@ export function makeParams(params) {
 }
 
 export function getImageUrl({workflowId, captureNum=0, imageType="raw",
-                      thumbnail=false}) {
+                      thumbnail=false, width=null}) {
   let parts = ["/api", "workflow", workflowId, "page", captureNum,
                imageType];
   let params = {};
   if (thumbnail) {
     parts.push("thumb");
+  } else if (width) {
+    params.width = width;
   } else {
     params.format = "browser";
   }
