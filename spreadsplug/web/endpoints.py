@@ -879,15 +879,16 @@ def get_page_image(fpath, page, workflow, number, img_type, plugname):
                            400)
     if width:
         # Scale image if requested
-        return scale_image(fpath, width=int(width))
+        return make_response(scale_image(fpath, width=int(width)),
+                             200, {'Content-Type': 'image/jpeg'})
     elif img_format:
-        # Convert to target format
+        # Convert to target format if neccessary
         if fpath.suffix.lower() not in ('.tif', '.tiff', '.jpg', '.jpeg'):
             img_format = 'png' if img_format == 'browser' else img_format
-        return convert_image(fpath, img_format)
-    else:
-        # Send unmodified if no scaling/converting is requested
-        return send_file(unicode(fpath))
+            return make_response(convert_image(fpath, img_format),
+                                 200, {'Content-Type': 'image/' + img_format})
+    # Send unmodified if no scaling/converting is requested/needed
+    return send_file(unicode(fpath))
 
 
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>/'
