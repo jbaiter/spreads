@@ -19,53 +19,47 @@
  */
 
 import React, {PropTypes, cloneElement} from "react";
-import {Modal, Button} from "react-bootstrap";
+import {Modal, ButtonGroup, Button} from "react-bootstrap";
 import FullscreenMixin from "react-fullscreen-component";
 
 import Icon from "components/utility/Icon";
 import ResponsiveImage from "components/utility/ResponsiveImage";
+import CropWidget from "components/utility/CropWidget";
+import {getImageUrl} from "utils/WebAPIUtils";
 
 export default React.createClass({
   displayName: "LightboxModal",
   mixins: [FullscreenMixin],
   propTypes: {
-    /** Identifiers for the content, will get passed to `onContentChange` */
-    contentIds: PropTypes.array.isRequired,
-    /** Callback to obtain content objects, gets passed a `contentId` and
-     * whether we are in fullscreen mode or not.
-     * Must return an object with `title`, `main` and `footer`, where only
-     * `main` is required. */
-    onContentChange: PropTypes.func.isRequired,
-    startId: PropTypes.any,
-    wrap: PropTypes.bool
+    /** Pages that should be available through the lightbox */
+    pages: PropTypes.array.isRequired,
+    startPage: PropTypes.object,
+    wrap: PropTypes.bool,
+    enableCrop: PropTypes.bool,
+    onCropped: PropTypes.func,
+    onDelete: PropTypes.func,
+    onEdit: PropTypes.func
   },
 
   getDefaultProps() {
     return {
-      wrap: true
+      wrap: true,
+      enableCrop: false
     };
   },
 
   getInitialState() {
-    const idx = this.props.startId ?
-      this.props.contentIds.indexOf(this.props.startId) : 0;
-    const content = this.convertContent(this.props.onContentChange(this.props.startId, false));
     return {
-      currentContentIdx: idx, content
+      viewCropWidget: false,
+      currentPage: this.props.startPage || this.props.pages[0]
     };
   },
 
-  convertContent(content) {
-    if (content.main.type === "img") {
-      content.main = (<ResponsiveImage container={() => this.refs.container}
-                                       {...content.main.props} />);
-    }
-    return content;
-  },
-
-  toggleFullscreen(e) {
-    e.preventDefault();
+  toggleFullscreen() {
     if (this.state.isFullscreen) {
+      if (this.state.viewCropWidget) {
+        this.setState({viewCropWidget: false});
+      }
       this.exitFullscreen();
     } else {
       this.requestFullscreen(this.refs.container);
@@ -73,46 +67,80 @@ export default React.createClass({
   },
 
   handlePreviousClick() {
-    let previousIdx;
-    if (this.state.currentContentIdx === 0) {
-      previousIdx = this.props.contentIds.length - 1;
+    const currentIdx = this.props.pages.indexOf(this.state.currentPage);
+    let previousPage;
+    if (currentIdx === 0) {
+      previousPage = this.props.pages.slice(-1)[0];
     } else {
-      previousIdx = this.state.currentContentIdx - 1;
+      previousPage = this.props.pages[currentIdx - 1];
     }
-    const id = this.props.contentIds[previousIdx];
-    const content = this.convertContent(this.props.onContentChange(id, this.state.isFullscreen));
-    this.setState({currentContentIdx: previousIdx, content});
+    this.setState({currentPage: previousPage});
   },
 
   handleNextClick() {
-    let nextIdx;
-    if (this.state.currentContentIdx === this.props.contentIds.length - 1) {
-      nextIdx = 0;
+    const currentIdx = this.props.pages.indexOf(this.state.currentPage);
+    let nextPage;
+    if (currentIdx === this.props.pages.length - 1) {
+      nextPage = this.props.pages[0];
     } else {
-      nextIdx = this.state.currentContentIdx + 1;
+      nextPage = this.props.pages[currentIdx + 1];
     }
-    const id = this.props.contentIds[nextIdx];
-    const content = this.convertContent(this.props.onContentChange(id, this.state.isFullscreen));
-    this.setState({currentContentIdx: nextIdx, content});
+    this.setState({currentPage: nextPage});
   },
 
-  onEnterFullscreen() {
-    const id = this.props.contentIds[this.state.currentContentIdx];
-    const content = this.convertContent(this.props.onContentChange(id, true));
-    this.setState({content});
+  onToggleCrop() {
+    if (!this.state.isFullscreen) {
+      this.toggleFullscreen();
+    }
+    this.setState({
+      viewCropWidget: !this.state.viewCropWidget
+    });
   },
 
-  onExitFullscreen() {
-    const id = this.props.contentIds[this.state.currentContentIdx];
-    const content = this.convertContent(this.props.onContentChange(id, false));
-    this.setState({content});
+  getImageSrc({full=false, width}) {
+    return getImageUrl({workflowId: this.state.currentPage.workflow_id,
+                        captureNum: this.state.currentPage.capture_num,
+                        width: full ? null : width || 640});
+  },
+
+  getMainContent() {
+    if (this.state.viewCropWidget) {
+      return (<CropWidget imageSrc={this.getImageSrc} onSave={this.props.onCropped}
+                          container={() => this.refs.container}/>);
+    } else {
+      return (<ResponsiveImage src={this.getImageSrc}
+                               container={() => this.refs.container} />);
+    }
+  },
+
+  getFooterContent() {
+    return (
+      <ButtonGroup>
+        {this.props.onDelete &&
+          <Button bsStyle="danger" onClick={this.props.onDelete}>
+            <Icon name="trash-o" /> Delete
+          </Button>}
+        {this.props.onCropped &&
+          <Button bsStyle="primary" onClick={this.onToggleCrop}>
+            <Icon name="crop" /> Crop
+          </Button>}
+        {this.props.onEdit &&
+          <Button onClick={this.props.onEdit}>
+            <Icon name="edit" /> Edit Metadata
+          </Button>}
+        <Button href={this.getImageSrc({full: true})} target="_blank">
+          <Icon name="image" /> Full image
+        </Button>
+      </ButtonGroup>);
   },
 
   render() {
-    const {currentContentIdx: idx, wrap: doWrap} = this.state;
-    const {title, main, footer} = this.state.content;
-    const viewPrevious = idx > 0 || doWrap;
-    const viewNext = idx < (this.props.contentIds.length - 1) || doWrap;
+    const {wrap: doWrap} = this.state;
+    const currentIdx = this.props.pages.indexOf(this.state.currentPage);
+    const viewPrevious = currentIdx > 0 || doWrap;
+    const viewNext = currentIdx < (this.props.pages.length - 1) || doWrap;
+    const title = this.state.currentPage.page_label;
+
     return (
       <Modal {...this.props} animation={true} title={title} className="lightbox">
         <div className="modal-body">
@@ -121,7 +149,8 @@ export default React.createClass({
               <a className="toggle-fullscreen" onClick={this.toggleFullscreen}>
                 <Icon name={this.state.isFullscreen ? "close" : "expand"} />
               </a>
-              {main}
+              {this.getMainContent()}
+              {!this.state.viewCropWidget &&
               <div className="lightbox-nav-overlay" ref="navOverlay">
                 <a className="lightbox-nav-left"
                     onClick={viewPrevious && this.handlePreviousClick}>
@@ -131,15 +160,14 @@ export default React.createClass({
                     onClick={viewNext && this.handleNextClick}>
                   {viewNext && <Icon name="chevron-right" />}
                 </a>
-              </div>
+              </div>}
               {this.state.isFullscreen &&
-               <div className="fullscreen-footer">{footer}</div>}
+               <div className="fullscreen-footer">{this.getFooterContent()}</div>}
             </div>
           </div>
         </div>
-        <div className="modal-footer">{footer}</div>
+        <div className="modal-footer">{this.getFooterContent()}</div>
       </Modal>
     );
   }
 });
-

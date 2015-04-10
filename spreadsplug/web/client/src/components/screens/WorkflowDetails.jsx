@@ -90,7 +90,6 @@ export default React.createClass({
       workflowId: this.state.workflow.id,
       captureNum: page.capture_num
     };
-    const fullImageUrl = getImageUrl(imageOpts);
     if (!isFullscreen) {
       imageOpts.width = 640;
     }
@@ -98,14 +97,7 @@ export default React.createClass({
 
     return {
       title: `Page ${page.page_label}`,
-      main: <img src={scaledImageUrl} />,
-      footer: (
-        <ButtonGroup>
-          <Button bsStyle="danger"><Icon name="trash-o" /> Delete</Button>
-          <Button bsStyle="primary"><Icon name="crop" /> Crop</Button>
-          <Button><Icon name="edit" /> Edit Metadata</Button>
-          <Button href={fullImageUrl} target="_blank"><Icon name="image" /> Full image</Button>
-        </ButtonGroup>)
+      main: <img src={scaledImageUrl} />
     };
   },
 
@@ -126,9 +118,9 @@ export default React.createClass({
                                                 captureNum: page.capture_num,
                                                 thumbnail: true});
                 return (
-                  <Col xs={4} md={3} lg={2} key={page.capture_num}>
+                  <Col xs={6} md={3} lg={2} key={page.capture_num}>
                     <a className="thumbnail"
-                       onClick={() => this.setState({showInLightbox: page.capture_num})}>
+                       onClick={() => this.setState({showInLightbox: page})}>
                       <img src={previewUrl} className="img-responsive"/>
                     </a>
                   </Col>
@@ -137,11 +129,12 @@ export default React.createClass({
           </Row>
         </Grid>
         <Pagination pageNum={this.getPageNum()} totalPages={totalPages}
-                    onPageChange={this.handleGridBrowse} />
+                    onPageChange={this.handleGridBrowse} rangeDisplay={3}
+                    marginDisplay={1} />
         {this.state.showInLightbox !== undefined &&
-          <LightboxModal contentIds={Object.keys(this.state.pages)}
-                         onContentChange={this.getLightboxContent}
-                         startId={this.state.showInLightbox.toString()}
+          <LightboxModal pages={values(this.state.pages)}
+                         startPage={this.state.showInLightBox}
+                         enableCrop={true} onCropped={console.log.bind(console)}
                          onRequestHide={() => this.setState({showInLightbox: undefined})}/>}
       </div>
     );
