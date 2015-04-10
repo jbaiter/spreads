@@ -38,7 +38,7 @@ export default React.createClass({
     return (
       <Modal {...this.props} bsStyle="primary" title="About Spreads" animation={true}>
         <div className="modal-body">
-          <img src={LOGO_URL} className="about-logo" />
+          <img src={LOGO_URL} className="about-logo img-responsive" />
           <hr/>
           <p>Version {this.props.version}</p>
           <p>
