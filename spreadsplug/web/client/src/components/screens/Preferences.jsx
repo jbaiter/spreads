@@ -76,7 +76,7 @@ export default React.createClass({
     return (
       <div>
         <h2>Preferences</h2>
-        <form className="form-horizontal" onSubmit={this.handleSubmit}>
+        <form onSubmit={this.handleSubmit}>
           <t.form.Form type={t.struct(structs)} options={options}
             value={this.state.config} ref="form"
             onChange={(data) => this.setState({config: data})} />
