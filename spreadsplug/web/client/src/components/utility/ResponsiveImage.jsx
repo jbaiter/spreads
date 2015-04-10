@@ -21,61 +21,25 @@
 import React, {PropTypes} from "react";
 import classNames from "classnames";
 
+import ResponsiveMixin from "components/utility/ResponsiveMixin";
 
 export default React.createClass({
   displayName: "ResponsiveImage",
+  mixins: [ResponsiveMixin],
   propTypes: {
-    /** React element to which the image should adopt.
-     *  Can be passed a function for lazy-loading the element. */
-    container: PropTypes.oneOfType([PropTypes.element, PropTypes.func])
-  },
-
-  getInitialState() {
-    return {
-      style: {}
-    };
-  },
-
-  componentDidMount() {
-    // See `utils/DOMUtils/initCustomEvents`
-    window.addEventListener("optimizedResize", this.onSizeChange);
-  },
-
-  componentWillUnmount() {
-    // See `utils/DOMUtils/initCustomEvents`
-    window.removeEventListener("optimizeResize", this.onSizeChange);
-  },
-
-  onSizeChange() {
-    if (!this.isMounted()) {
-      return;
-    }
-    const img = React.findDOMNode(this.refs.img);
-    let container;
-    if (React.isValidElement(this.props.container)) {
-      container = React.findDOMNode(this.props.container);
-    } else if (typeof this.props.container === "function") {
-      container = React.findDOMNode(this.props.container());
-    } else {
-      container = img.parentElement;
-    }
-    const containerAspect = container.offsetWidth / container.offsetHeight;
-    const imageAspect = img.naturalWidth / img.naturalHeight;
-
-    let style = {};
-    if (imageAspect > containerAspect) {
-      style.width = container.offsetWidth;
-    } else {
-      style.height = container.offsetHeight;
-    }
-    this.setState({
-      style, container
-    });
+    src: PropTypes.oneOfType([PropTypes.string, PropTypes.func])
   },
 
   render() {
+    let imageSrc;
+    if (typeof this.props.src === "function") {
+      imageSrc = this.props.src(this.state.size);
+    } else {
+      imageSrc = this.props.src;
+    }
     return (
-      <img {...this.props} ref="img" style={this.state.style} onLoad={this.onSizeChange} />
+      <img {...this.props} src={imageSrc} ref="img" style={this.state.size}
+           onLoad={this.onImageLoaded} />
     );
   }
 });
