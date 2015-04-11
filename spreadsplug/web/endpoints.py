@@ -276,16 +276,27 @@ def _list_plugins(enabled_only=True):
     :type enabled_only:     bool
     :rtype: dict (key: unicode, value: list of unicode)
     """
+    # TODO: We should probably include more information than just the name:
+    #   - Disabled/Enabled status
+    #   - Available/Unavailable status with reasons if unavailable
+    #   - Configuration templates
+    #   - Version if available
+    #   - Description if available
     config = app.config['default_config']
     exts = list(pkg_resources.iter_entry_points('spreadsplug.hooks'))
     activated = config['plugins'].get()
 
     def get_kind(mixin):
-        return sorted(
-            [ext.name for ext in exts
-             if (ext.name in activated or not enabled_only) and
-             issubclass(ext.load(), mixin)],
-            key=lambda x: activated.index(x) if enabled_only else 0)
+        names = []
+        for ext in exts:
+            try:
+                has_mixin = issubclass(ext.load(), mixin)
+            except:
+                has_mixin = False
+            if (ext.name in activated or not enabled_only) and has_mixin:
+                names.append(ext.name)
+        return sorted(names,
+                      key=lambda x: activated.index(x) if enabled_only else 0)
 
     out = {
         'subcommand': get_kind(plugin.SubcommandHooksMixin)
