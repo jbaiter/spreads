@@ -1,4 +1,54 @@
-.crop-container {
-  width: 100%;
-  height: 100%;
+.crop {
+  &-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  &-discard {
+    @include overlay-link(0.4, 2em);
+    color: red;
+    z-index: 300;
+    position: absolute;
+    top: 0;
+    left: 40%;
+    padding-top: 15px;
+    text-align: right;
+  }
+
+  &-save {
+    @include overlay-link(0.4, 2em);
+    color: lightblue;
+    z-index: 300;
+    position: absolute;
+    top: 0;
+    right: 40%;
+    padding-top: 15px;
+    text-align: left;
+  }
+
+  &-values {
+    z-index: 300;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding-top: 15px;
+    padding-left: 15px;
+
+    &-group {
+      font-size: 0.8em;
+      display: block;
+      background-color: rgba(255,255,255,0.5);
+      text-align: right;
+
+      label {
+        margin-right: 0.25em;
+      }
+
+      input {
+        font-weight: bold;
+        width: 5em;
+        border-width: 0;
+      }
+    }
+  }
 }

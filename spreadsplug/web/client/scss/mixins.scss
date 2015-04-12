@@ -1,0 +1,30 @@
+@mixin overlay-link($initial-opacity, $font-size) {
+  cursor: pointer;
+  opacity: $initial-opacity;
+  -webkit-transition: opacity 0.5s;
+  -moz-transition: opacity 0.5s;
+  -o-transition: opacity 0.5s;
+  transition: opacity 0.5s;
+  color: #fff;
+  font-size: $font-size;
+  text-shadow: 2px 2px 4px #000;
+  filter: dropshadow(color=#000, offx=2, offy=2);
+
+  &:hover {
+    opacity: 1;
+    text-decoration: none;
+  }
+}
+
+@mixin fullscreen() {
+  &:-webkit-full-screen {
+    @content;
+  }
+  &:-mozilla-full-screen {
+    @content;
+  }
+  &:full-screen {
+    @content;
+  }
+}
+
