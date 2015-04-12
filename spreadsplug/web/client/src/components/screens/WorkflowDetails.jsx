@@ -128,7 +128,7 @@ export default React.createClass({
                     marginDisplay={1} />
         {this.state.showInLightbox !== undefined &&
           <LightboxModal pages={values(this.state.pages)}
-                         startPage={this.state.showInLightBox}
+                         startPage={this.state.showInLightbox}
                          enableCrop={true} onCropped={console.log.bind(console)}
                          onRequestHide={() => this.setState({showInLightbox: undefined})}/>}
       </div>

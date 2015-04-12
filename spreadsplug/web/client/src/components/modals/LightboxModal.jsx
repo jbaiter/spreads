@@ -160,7 +160,7 @@ export default React.createClass({
                   {viewNext && <Icon name="chevron-right" />}
                 </a>
               </div>}
-              {this.state.isFullscreen &&
+              {this.state.isFullscreen && !this.state.viewCropWidget &&
                <div className="fullscreen-footer">{this.getFooterContent()}</div>}
             </div>
           </div>
