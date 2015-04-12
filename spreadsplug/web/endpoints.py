@@ -156,7 +156,7 @@ def _bootstrapped_state():
                                   if k != "pages"}
                           for wf in workflows.values()}},
         "PageStore": {
-            "pages": {wf.id: {pg.capture_num: pg.to_dict() for pg in wf.pages}
+            "pages": {wf.id: {pg.capture_num: pg for pg in wf.pages}
                       for wf in workflows.values()}},
         "LoggingStore": {
             "records": sorted(logbuffer, key=lambda x: x.relativeCreated,

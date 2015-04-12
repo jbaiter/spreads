@@ -43,8 +43,7 @@ const WorkflowItem = React.createClass({
 
   render() {
     const imageUrl = this.props.pages ?
-      getImageUrl({workflowId: this.props.workflow.id,
-                   captureNum: this.props.pages[0].capture_num,
+      getImageUrl({page: this.props.pages[0],
                    thumbnail: true}) : null;
     const mediaElem = (
       <Link to="view-workflow" params={{id: this.props.workflow.id}}>

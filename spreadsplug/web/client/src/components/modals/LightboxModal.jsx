@@ -98,8 +98,7 @@ export default React.createClass({
   },
 
   getImageSrc({full=false, width}) {
-    return getImageUrl({workflowId: this.state.currentPage.workflow_id,
-                        captureNum: this.state.currentPage.capture_num,
+    return getImageUrl({page: this.state.currentPage,
                         width: full ? null : width || 640});
   },
 

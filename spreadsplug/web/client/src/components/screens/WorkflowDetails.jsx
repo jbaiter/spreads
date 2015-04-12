@@ -86,10 +86,7 @@ export default React.createClass({
     }
 
     const page = this.state.pages[pageId];
-    let imageOpts = {
-      workflowId: this.state.workflow.id,
-      captureNum: page.capture_num
-    };
+    let imageOpts = {page};
     if (!isFullscreen) {
       imageOpts.width = 640;
     }
@@ -114,9 +111,7 @@ export default React.createClass({
           <Row>
             {values(pages).slice(pageOffset, pageOffset + perPage)
               .map((page) => {
-                const previewUrl = getImageUrl({workflowId: this.state.workflow.id,
-                                                captureNum: page.capture_num,
-                                                thumbnail: true});
+                const previewUrl = getImageUrl({page, thumbnail: true});
                 return (
                   <Col xs={6} md={3} lg={2} key={page.capture_num}>
                     <a className="thumbnail"

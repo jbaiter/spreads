@@ -46,19 +46,25 @@ export function makeParams(params) {
   }
 }
 
-export function getImageUrl({workflowId, captureNum=0, imageType="raw",
-                      thumbnail=false, width=null}) {
-  let parts = ["/api", "workflow", workflowId, "page", captureNum,
-               imageType];
+export function getImageUrl({page, imageType="raw", thumbnail=false, width=null}) {
+  let baseUrl;
+  if (imageType === "raw") {
+    baseUrl = page.raw_image.url;
+  } else {
+    baseUrl = page.processed_images[imageType].url;
+  }
   let params = {};
   if (thumbnail) {
-    parts.push("thumb");
-  } else if (width) {
-    params.width = width;
+    baseUrl += "/thumb";
   } else {
-    params.format = "browser";
+    baseUrl += "/data";
+    if (width) {
+      params.width = width;
+    } else {
+      params.format = "browser";
+    }
   }
-  return makeUrl(...parts) + makeParams(params);
+  return baseUrl + makeParams(params);
 }
 
 export function fetchChecked(url, options={}) {

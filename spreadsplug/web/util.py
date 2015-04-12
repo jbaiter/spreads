@@ -26,13 +26,13 @@ import uuid
 from datetime import datetime
 from io import BufferedIOBase, UnsupportedOperation
 
-from flask import abort
+from flask import abort, url_for
 from flask.json import JSONEncoder
 from pathlib import Path
 from wand.image import Image
 from werkzeug.routing import BaseConverter
 
-from spreads.workflow import Workflow, signals as workflow_signals
+from spreads.workflow import Workflow, Page, signals as workflow_signals
 from spreads.util import EventHandler
 
 try:
@@ -66,14 +66,22 @@ class Event(object):
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
-        if hasattr(obj, 'to_dict'):
+        if isinstance(obj, Page):
+            return self._page_to_dict(obj)
+        elif hasattr(obj, 'to_dict'):
             return obj.to_dict()
         elif isinstance(obj, logging.LogRecord):
             return self._logrecord_to_dict(obj)
         elif isinstance(obj, Event):
             return self._event_to_dict(obj)
         elif isinstance(obj, Path):
-            return mimetypes.guess_type(unicode(obj))[0]
+            stats = obj.stat()
+            return {
+                'size': stats.st_size,
+                'mimeType': mimetypes.guess_type(unicode(obj))[0],
+                'created': stats.st_ctime,
+                'modified': stats.st_mtime
+            }
         elif isinstance(obj, datetime):
             # Return datetime as an epoch timestamp with microsecond-resolution
             return (time.mktime(obj.timetuple())*1000 + obj.microsecond)/1000.0
@@ -99,6 +107,30 @@ class CustomJSONEncoder(JSONEncoder):
         elif event.signal is EventHandler.on_log_emit:
             data = data['record']
         return {'name': name, 'data': data, 'id': event.id}
+
+    def _page_to_dict(self, page):
+        from spreadsplug.web.app import app
+        out = page.to_dict()
+        workflow = Workflow.find_by_id(app.config['base_path'],
+                                       page._workflow_id)
+        out["raw_image"] = _image_to_dict("raw", page.raw_image, workflow,
+                                          page)
+        out["processed_images"] = {
+            k: _image_to_dict(k, v, workflow, page)
+            for k, v in page.processed_images.iteritems()}
+        return out
+
+
+def _image_to_dict(typename, fpath, workflow, page):
+    img_type = "raw" if typename == "raw" else "processed"
+    plugname = typename if typename != "raw" else None
+    return {
+        'info': fpath,
+        'url': url_for("get_page_image",
+                       workflow=workflow,
+                       number=page.capture_num,
+                       img_type=img_type, plugname=plugname)[:-5],
+    }
 
 
 def get_image_size(fpath):
