@@ -45,7 +45,8 @@ from spreads.workflow import Workflow, ValidationError
 
 from spreadsplug.web.app import app
 from discovery import discover_servers
-from util import WorkflowConverter, get_thumbnail, scale_image, convert_image
+from util import (WorkflowConverter, get_thumbnail, scale_image, convert_image,
+                  get_image_size)
 
 if is_os('windows'):
     from util import find_stick_win as find_stick
@@ -846,10 +847,10 @@ def get_all_pages(workflow):
                          200, {'Content-Type': 'application/json'})
 
 
-@app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>',
-           defaults={'plugname': None})
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>'
-           '/<plugname>')
+           '/data', defaults={'plugname': None})
+@app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>'
+           '/<plugname>/data')
 @inject_page_image
 def get_page_image(fpath, page, workflow, number, img_type, plugname):
     """ Get image for requested page.
@@ -900,6 +901,16 @@ def get_page_image(fpath, page, workflow, number, img_type, plugname):
                                  200, {'Content-Type': 'image/' + img_format})
     # Send unmodified if no scaling/converting is requested/needed
     return send_file(unicode(fpath))
+
+
+@app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>'
+           '/size', defaults={'plugname': None})
+@app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>'
+           '/<plugname>/size')
+@inject_page_image
+def get_page_image_size(fpath, page, workflow, number, img_type, plugname):
+    width, height = get_image_size(fpath)
+    return jsonify({"width": width, "height": height})
 
 
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>/'

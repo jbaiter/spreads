@@ -101,6 +101,11 @@ class CustomJSONEncoder(JSONEncoder):
         return {'name': name, 'data': data, 'id': event.id}
 
 
+def get_image_size(fpath):
+    with Image(filename=unicode(fpath)) as img:
+        return (img.width, img.height)
+
+
 class WorkflowConverter(BaseConverter):
     def to_python(self, value):
         from spreadsplug.web.app import app
