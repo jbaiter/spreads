@@ -19,19 +19,22 @@
  */
 
 import React, {PropTypes} from "react";
+import clone from "lodash/lang/clone";
 
+import Icon from "components/utility/Icon";
 import ResponsiveMixin from "components/utility/ResponsiveMixin";
 
 // TODO: Rendering the image into a canvas is *really* slow on mobile browsers.
 //       Consider using the DOM for rendering the image and only drawing the
 //       rectangle using the canvas.
+// TODO: Optionally show inputs for manually adjusting the values
 
 // Border length of border hitboxes
 const HITBOX_LENGTH = 35;
 // Minimum border length of crop box in either dimension
 const MINIMUM_LENGTH = 15;
 // Color and alpha of the crop box
-const CROPBOX_COLOR = "rgba(255,0,0,0.5)";
+const CROPBOX_COLOR = "rgba(0,255,0,0.5)";
 
 export default React.createClass({
   displayName: "CropWidget",
@@ -39,20 +42,25 @@ export default React.createClass({
   propTypes: {
     /** Source image URL */
     imageSrc: PropTypes.oneOfType([PropTypes.string, PropTypes.func]).isRequired,
+    /** Native size of the image */
+    nativeSize: PropTypes.object,
     /** Function that is called when the user decides to save the crop
       * selection */
     onSave: PropTypes.func.isRequired,
     /** Current crop parameters, for unscaled image */
-    initialCropParams: PropTypes.object,
-    /** Whether to show input boxes with values below image */
-    showInputs: PropTypes.bool
+    initialCropParams: PropTypes.object
   },
 
   // =============== Lifecycle methods ==================
   getDefaultProps() {
     return {
       showInputs: false,
-      cropParams: null,
+      initialCropParams: {
+        x: undefined,
+        y: undefined,
+        width: undefined,
+        height: undefined
+      },
       container: () => this.refs.cropContainer
     };
   },
@@ -98,7 +106,11 @@ export default React.createClass({
     return (nextState.dragMode !== this.state.dragMode) ||
            (nextState.size.width !== this.state.size.width) ||
            (nextState.size.height !== this.state.size.height) ||
-           (nextState.cursorStyle !== this.state.cursorStyle);
+           (nextState.cursorStyle !== this.state.cursorStyle) ||
+           (nextState.cropParams.x !== this.state.cropParams.x) ||
+           (nextState.cropParams.y !== this.state.cropParams.y) ||
+           (nextState.cropParams.width !== this.state.cropParams.width) ||
+           (nextState.cropParams.height !== this.state.cropParams.height);
   },
 
   // =============== Helper methods ==================
@@ -121,7 +133,7 @@ export default React.createClass({
    */
   getDragMode({clientX, clientY}) {
     const {canvasPosition: canvas, cropParams: cropBox} = this.state;
-    if (!cropBox) {
+    if (!cropBox.width) {
       return "default";
     }
     const offsetLeft   = clientX - canvas.x - cropBox.x,
@@ -179,36 +191,28 @@ export default React.createClass({
    *  scaling the underlying image on every redraw, with also helps with
   *   performance. */
   requestRedraw() {
-    if (!this.state.redrawPending) {
-      requestAnimationFrame(this.redraw);
-      this.setState({
-        redrawPending: true
-      });
+    if (this.state.redrawPending) {
+      cancelAnimationFrame(this.state.redrawPending);
     }
+    this.setState({
+      redrawPending: requestAnimationFrame(this.redraw)
+    });
   },
 
   redraw() {
     const ctx = this.state.canvasNode.getContext("2d");
     ctx.drawImage(this.state.offscreenCanvasNode, 0, 0);
-    if (this.state.cropParams) {
+    if (this.state.cropParams.width) {
       const {x, y, width, height} = this.state.cropParams;
       ctx.fillStyle = CROPBOX_COLOR;
       ctx.strokeStyle = CROPBOX_COLOR;
       ctx.fillRect(x, y, width, height);
-
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(0,0,0,1.0)";
-      ctx.setLineDash([5]);
-      ctx.moveTo(x + HITBOX_LENGTH, y + HITBOX_LENGTH);
-      ctx.lineTo(x + width - HITBOX_LENGTH, y + HITBOX_LENGTH);
-      ctx.lineTo(x + width - HITBOX_LENGTH, y + height - HITBOX_LENGTH);
-      ctx.lineTo(x + HITBOX_LENGTH, y + height - HITBOX_LENGTH);
-      ctx.closePath();
-      ctx.stroke();
     }
-    this.setState({
-      redrawPending: false
-    });
+    if (this.state.redrawPending) {
+      this.setState({
+        redrawPending: false
+      });
+    }
   },
 
   loadImage(initial=false) {
@@ -221,7 +225,6 @@ export default React.createClass({
     if (!initial && window.location.origin + src === this.state.sourceImage.src) {
       return this.state.sourceImage;
     } else {
-      console.log("load");
       let img = new Image();
       img.addEventListener("load", this.onImageLoaded);
       img.src = src;
@@ -257,6 +260,12 @@ export default React.createClass({
         cropBox.height = this.state.size.height - cropBox.y;
       }
     }
+    if (cropBox.width < MINIMUM_LENGTH) {
+      cropBox.width = MINIMUM_LENGTH;
+    }
+    if (cropBox.height < MINIMUM_LENGTH) {
+      cropBox.height = MINIMUM_LENGTH;
+    }
     return cropBox;
   },
 
@@ -279,14 +288,14 @@ export default React.createClass({
       cropBox.y += movementY;
     }
     if (eastAreas.indexOf(dragMode) !== -1) {
-      cropBox.width = Math.max(MINIMUM_LENGTH, cropBox.width + movementX);
+      cropBox.width = cropBox.width + movementX;
     } else if (westAreas.indexOf(dragMode) !== -1) {
-      cropBox.width = Math.max(MINIMUM_LENGTH, cropBox.width - movementX);
+      cropBox.width = cropBox.width - movementX;
     }
     if (southAreas.indexOf(dragMode) !== -1) {
-      cropBox.height = Math.max(MINIMUM_LENGTH, cropBox.height + movementY);
+      cropBox.height = cropBox.height + movementY;
     } else if (northAreas.indexOf(dragMode) !== -1) {
-      cropBox.height = Math.max(MINIMUM_LENGTH, cropBox.height - movementY);
+      cropBox.height = cropBox.height - movementY;
     }
     cropBox = this.sanitizeCropBox(cropBox);
 
@@ -323,6 +332,19 @@ export default React.createClass({
       });
     }
     return normalized;
+  },
+
+  getNativeCropBox() {
+    if (!this.props.nativeSize) {
+      return null;
+    }
+    const factor = this.props.nativeSize.width / this.state.size.width;
+    return {
+      x: Math.ceil(factor * this.state.cropParams.x),
+      y: Math.ceil(factor * this.state.cropParams.y),
+      width: Math.ceil(factor * this.state.cropParams.width),
+      height: Math.ceil(factor * this.state.cropParams.height)
+    };
   },
 
   // =============== Event handlers ==================
@@ -367,11 +389,11 @@ export default React.createClass({
       newState.cropParams = {
         x: e.clientX - this.state.canvasPosition.x,
         y: e.clientY - this.state.canvasPosition.y,
-        width: 1,
-        height: 1
+        width: MINIMUM_LENGTH,
+        height: MINIMUM_LENGTH
       };
     }
-    this.setState(newState);
+    this.setState(newState, this.requestRedraw);
     document.addEventListener("mouseup", this.handleRelease);
     document.addEventListener("touchend", this.handleRelease);
   },
@@ -398,9 +420,77 @@ export default React.createClass({
     document.removeEventListener("touchend", this.handleRelease);
   },
 
+  handleDiscardCurrent() {
+    this.setState({
+      cropParams: {
+        x: undefined,
+        y: undefined,
+        width: undefined,
+        height: undefined
+      }
+    }, this.redraw);
+  },
+
+  handleManualUpdate({target: {name, value}}) {
+    const factor = this.props.nativeSize ?
+      this.props.nativeSize.width / this.state.size.width : 1;
+    const paramKey = name.substr(5);
+    let cropBox = clone(this.state.cropParams);
+    const currentValue = cropBox[paramKey];
+    const newValue = value / factor;
+    const roundFunc = newValue > currentValue ? Math.ceil : Math.floor;
+    cropBox[paramKey] = roundFunc(newValue);
+    this.setState({
+      cropParams: cropBox
+    }, this.redraw);
+  },
+
   render() {
+    const nativeBox = this.getNativeCropBox();
     return (
       <div ref="cropContainer" className="crop-container">
+        <a className="crop-discard" onClick={this.handleDiscardCurrent}>
+          <Icon name="trash" />
+        </a>
+        <a className="crop-save"
+            onClick={() => this.props.onSave(nativeBox || this.state.cropParams)}>
+          <Icon name="save" />
+        </a>
+        {nativeBox &&
+        <div className="crop-values">
+          <div className="crop-values-group">
+            <label htmlFor="crop-x">
+              Left
+            </label>
+            <input type="number" name="crop-x" min={MINIMUM_LENGTH}
+                   onChange={this.handleManualUpdate}
+                   value={nativeBox.x} />
+          </div>
+          <div className="crop-values-group">
+            <label htmlFor="crop-y">
+              Top
+            </label>
+            <input type="number" name="crop-y" min={MINIMUM_LENGTH}
+                   onChange={this.handleManualUpdate}
+                   value={nativeBox.y} />
+          </div>
+          <div className="crop-values-group">
+            <label htmlFor="crop-width">
+              Width
+            </label>
+            <input type="number" name="crop-width" min={MINIMUM_LENGTH}
+                   onChange={this.handleManualUpdate}
+                   value={nativeBox.width} />
+          </div>
+          <div className="crop-values-group">
+            <label htmlFor="crop-height">
+              Height
+            </label>
+            <input type="number" name="crop-height" min={MINIMUM_LENGTH}
+                   onChange={this.handleManualUpdate}
+                   value={nativeBox.height} />
+          </div>
+        </div>}
         <canvas width={this.state.size.width} height={this.state.size.height}
                 onMouseDown={this.handlePress} onTouchStart={this.handlePress}
                 style={{cursor: this.state.cursorStyle}} ref="canvas"
