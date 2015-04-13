@@ -25,7 +25,7 @@ import FullscreenMixin from "react-fullscreen-component";
 import Icon from "components/utility/Icon";
 import ResponsiveImage from "components/utility/ResponsiveImage";
 import CropWidget from "components/utility/CropWidget";
-import {getImageUrl} from "utils/WebAPIUtils";
+import {getImageUrl, fetchJson} from "utils/WebAPIUtils";
 
 export default React.createClass({
   displayName: "LightboxModal",
@@ -51,7 +51,8 @@ export default React.createClass({
   getInitialState() {
     return {
       viewCropWidget: false,
-      currentPage: this.props.startPage || this.props.pages[0]
+      currentPage: this.props.startPage || this.props.pages[0],
+      imageNativeSize: null
     };
   },
 
@@ -102,10 +103,23 @@ export default React.createClass({
                         width: full ? null : width || 640});
   },
 
+  retrieveNativeSize(page) {
+    let imgUrl = getImageUrl({page: page}).split("?")[0];
+    fetchJson(imgUrl.substring(0, imgUrl.length - 5) + "/size")
+      .then((data) => this.setState({imageNativeSize: data}));
+  },
+
   getMainContent() {
     if (this.state.viewCropWidget) {
+      // We lazy-load the native size to ensure that the crop dialog pops up
+      // quickly. This will cause an additional re-render once the size has
+      // been obtained.
+      if (!this.state.imageNativeSize) {
+        this.retrieveNativeSize(this.state.currentPage);
+      }
       return (<CropWidget imageSrc={this.getImageSrc} onSave={this.props.onCropped}
-                          container={() => this.refs.container}/>);
+                          nativeSize={this.state.imageNativeSize}
+                          container={() => this.refs.container} />);
     } else {
       return (<ResponsiveImage src={this.getImageSrc}
                                container={() => this.refs.container} />);
