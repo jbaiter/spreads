@@ -79,6 +79,12 @@ export function fetchChecked(url, options={}) {
 }
 
 export function fetchJson(url, options) {
+  Object.assign(options.headers, {
+      "Accept": "application/json",
+      "Content-Type": "application/json"});
+  if (options.body && typeof options.body !== "string") {
+    options.body = JSON.stringify(options.body);
+  }
   return fetch(url, options)
     .then((resp) => {
       const json = resp.json();

@@ -934,12 +934,48 @@ def get_page_image_thumb(fpath, page, workflow, number, img_type, plugname):
 
 
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>',
+           methods=['PUT'])
+@inject_page
+def update_page(workflow, number, page):
+    """ Update a single page from a workflow. """
+    updated_data = json.loads(request.data)
+    if "page_label" in updated_data:
+        page.page_label = updated_data["page_label"]
+    if "processing_params" in updated_data:
+        page.processing_params.update(updated_data["processing_params"])
+    workflow._save_pages()
+    return jsonify(page.to_dict())
+
+
+@app.route('/api/workflow/<workflow:workflow>/page', methods=['PUT'])
+def bulk_update_pages(workflow):
+    """ Update a multiple pages from a workflow. """
+    updated_pages = json.loads(request.data)['pages']
+    for data in updated_pages:
+        page = next((p for p in workflow.pages
+                     if p.capture_num == data['capture_num']), None)
+        if page is None:
+            raise ValidationError(pages="No page with `capture_num` {}"
+                                        .format(data['capture_num']))
+        if "page_label" in data:
+            page.page_label = data["page_label"]
+        if "processing_params" in data:
+            page.processing_params.update(data["processing_params"])
+    workflow._save_pages()
+    updated_ids = [p['capture_num'] for p in updated_pages]
+    return jsonify(dict(pages=[p for p in workflow.pages
+                               if p.capture_num in updated_ids]))
+
+
+@app.route('/api/workflow/<workflow:workflow>/page/<int:number>',
            methods=['DELETE'])
 @inject_page
 def delete_page(workflow, number, page):
     """ Remove a single page from a workflow. """
+    # Get data now since we won't have a reference to it after we delete
+    data = json.dumps(page)
     workflow.remove_pages(page)
-    return jsonify(dict(page=page))
+    return make_response(data, 200, {'Content-Type': 'application/json'})
 
 
 @app.route('/api/workflow/<workflow:workflow>/page', methods=['DELETE'])
@@ -947,11 +983,11 @@ def bulk_delete_pages(workflow):
     """ Delete multiple pages from a workflow with one request. """
     cap_nums = [p['capture_num'] for p in json.loads(request.data)['pages']]
     to_delete = [p for p in workflow.pages if p.capture_num in cap_nums]
+    data = json.dumps(to_delete)
     logger.debug("Bulk removing from workflow {0}: {1}".format(
         workflow.id, to_delete))
     workflow.remove_pages(*to_delete)
-    return make_response(json.dumps(to_delete),
-                         200, {'Content-Type': 'application/json'})
+    return make_response(data, 200, {'Content-Type': 'application/json'})
 
 
 # ================= #

@@ -18,37 +18,47 @@
  * along with Spreads.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {makeJsonRequest, makeUrl, makeParams} from "utils/WebAPIUtils.js";
+import {fetchJson, makeUrl, makeParams} from "utils/WebAPIUtils.js";
 import alt from "alt";
 
 class PageActions {
   constructor() {
-    this.generateActions("remotelyDeleted", "remotelyCropped", "actionFailed");
+    this.generateActions("remotelyDeleted", "remotelyCropped", "actionFailed",
+                      "remotelyUpdated");
+  }
+
+  updateOne(data) {
+    this.dispatch();
+    fetchJson(
+      makeUrl("/api/workflow", data.workflow_id, "page", data.capture_num),
+      {method: "put", body: data})
+      .then((data) => this.actions.remotelyUpdated(data))
+      .catch((error) => this.actions.actionFailed(error));
+  }
+
+  updateMany(pages) {
+    this.dispatch();
+    fetchJson(
+      makeUrl("/api/workflow", pages[0].workflow_id, "page"),
+      {method: "put", body: {pages}})
+      .then((data) => this.actions.remotelyUpdated(data))
+      .catch((error) => this.actions.actionFailed(error));
   }
 
   deleteOne({workflowId, pageId}) {
     this.dispatch();
-    makeJsonRequest(makeUrl("/api/workflow", workflowId, "page",
-                            pageId), "delete", {})
-      .then((resp) => this.actions.remotelyDeleted(resp.json()))
-      .catch((error) => this.actions.actionFailed(error.json()));
+    fetchJson(makeUrl("/api/workflow", workflowId, "page", pageId),
+              {method: "delete"})
+      .then((data) => this.actions.remotelyDeleted(data))
+      .catch((error) => this.actions.actionFailed(error));
   }
 
   deleteMany({workflowId, pageIds}) {
     this.dispatch();
-    makeJsonRequest(makeUrl("/api/workflow", workflowId, "page"),
-                            "delete", {pages: pageIds})
-      .then((resp) => this.actions.remotelyDeleted(resp.json()))
-      .catch((error) => this.actions.actionFailed(error.json()));
-  }
-
-  crop({workflowId, pageId, cropParams}) {
-    makeJsonRequest(
-      makeUrl("/api/workflow", workflowId, "page", pageId,
-              "crop" + makeParams(cropParams)),
-      "post", {})
-      .then(() => this.dispatch())
-      .catch((error) => this.actions.actionFailed(error.json()));
+    fetchJson(makeUrl("/api/workflow", workflowId, "page"),
+                      {method: "delete", body: {pages: pageIds}})
+      .then((data) => this.actions.remotelyDeleted(data))
+      .catch((error) => this.actions.actionFailed(error));
   }
 }
 

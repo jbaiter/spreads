@@ -138,6 +138,11 @@ class Page(object):
     :attr page_label:       A label for the page. Must be an integer, a string
                             of digits or a roman numeral (e.g. 12, '12',
                             'XII'). Defaults to the sequence number.
+    :attr processing_params: A dictionary of parameters that are to be used by
+                             postprocessing plugins. Currently supported
+                             keys are 'rotate' (int, a multiple of 90) and
+                             'crop' (a 4-tuple of (x, y, width, height),
+                             relative to the unrotated raw image).
     """
     # FIXME: This type is insufficient for the case where the raw images
     # contain two individual pages, i.e. the whole bookspreads was captured in

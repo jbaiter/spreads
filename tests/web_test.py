@@ -217,6 +217,46 @@ def test_get_page_image_thumb(client):
     assert jpegtran.JPEGImage(blob=rv.data).width == 196
 
 
+def test_delete_page(client):
+    wfid = create_workflow(client, 4)
+    page = json.loads(client.delete('/api/workflow/{0}/page/1'.format(wfid))
+                      .data)
+    assert page['capture_num'] == 1
+    workflow = json.loads(client.get('/api/workflow/{0}'.format(wfid)).data)
+    assert next((p for p in workflow['pages'] if p['capture_num'] == 1),
+                None) is None
+
+
+def test_bulk_delete_pages(client):
+    wfid = create_workflow(client, 8)
+    pages = json.loads(client.get('/api/workflow/{0}/page'.format(wfid)).data)
+    to_delete = [p for p in pages if not p['capture_num'] % 2]
+    deleted = json.loads(
+        client.delete('/api/workflow/{0}/page'.format(wfid),
+                      data=json.dumps(dict(pages=to_delete))).data)
+    assert deleted == to_delete
+    workflow = json.loads(client.get('/api/workflow/{0}'.format(wfid)).data)
+    assert (
+        next((p for p in workflow['pages'] if not p['capture_num'] % 2), None)
+        is None)
+
+
+def test_update_page(client):
+    wfid = create_workflow(client, 2)
+    updated_data = {
+        'foobar': 'baz',
+        'processing_params': {
+            'rotate': 180
+        },
+        'page_label': 'foo'}
+    page = json.loads(client.put('/api/workflow/{0}/page/1'.format(wfid),
+                                 data=json.dumps(updated_data)).data)
+    assert 'foobar' not in page
+    assert page['page_label'] == 'foo'
+    assert page['processing_params']['crop'] is None
+    assert page['processing_params']['rotate'] == 180
+
+
 def test_prepare_capture(client):
     wfid = create_workflow(client, num_captures=None)
     rv = client.post('/api/workflow/{0}/prepare_capture'.format(wfid))
