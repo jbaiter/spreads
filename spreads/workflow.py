@@ -41,13 +41,6 @@ import spreads.util as util
 from spreads.config import Configuration
 from spreads.metadata import Metadata
 
-try:
-    from jpegtran import JPEGImage
-    HAS_JPEGTRAN = True
-except ImportError:
-    HAS_JPEGTRAN = False
-    from PIL import Image
-
 signals = Namespace()
 on_created = signals.signal('workflow:created', doc="""\
 Sent by a :class:`Workflow` when a new workflow was created.
@@ -150,12 +143,18 @@ class Page(object):
     # contain two individual pages, i.e. the whole bookspreads was captured in
     # a single image. How would we deal with that scenario?
     __slots__ = [b"sequence_num", b"capture_num", b"raw_image", b"page_label",
-                 b"processed_images", "_workflow_id"]
+                 b"processing_params", b"processed_images", "_workflow_id"]
 
     def __init__(self, raw_image, workflow_id, sequence_num=None,
-                 capture_num=None, page_label=None, processed_images=None):
+                 capture_num=None, page_label=None, processing_params=None,
+                 processed_images=None):
         self.raw_image = raw_image
         self._workflow_id = workflow_id
+        self.processing_params = {
+            "crop": None,
+            "rotate": 0
+        }
+        self.processing_params.update(processing_params or {})
         self.processed_images = processed_images or {}
         if capture_num:
             self.capture_num = capture_num
@@ -206,6 +205,7 @@ class Page(object):
             'capture_num': self.capture_num,
             'page_label': self.page_label,
             'raw_image': self.raw_image,
+            'processing_params': self.processing_params,
             'processed_images': self.processed_images,
             'workflow_id': self._workflow_id
         }
@@ -596,55 +596,6 @@ class Workflow(object):
         self._save_pages()
         self.bag.update_payload(fast=True)
 
-    def crop_page(self, page, left, top, width=None, height=None, async=False):
-        """ Crop a page's raw image.
-
-        :param page:    Page the raw image of which should be cropped
-        :param left:    X coordinate of crop boundary
-        :param top:     Y coordinate of crop boundary
-        :param width:   Width of crop box
-        :param height:  Height of crop box
-        :param async:   Perform the cropping in a background thread
-        :return:        The Future object when ``async`` was ``True``
-        :rtype:         :py:class:`concurrent.futures.Future`
-        """
-        # FIXME: Does this really have to be a Workflow method?
-        def do_crop(fname, left, top, width, height):
-            if HAS_JPEGTRAN:
-                img = JPEGImage(fname)
-            else:
-                img = Image(filename=fname)
-            width = (img.width - left) if width is None else width
-            height = (img.height - top) if height is None else height
-            if width > (img.width - left):
-                width = img.width - left
-            if height > (img.height - top):
-                width = img.height - top
-            if (left, top, width, height) == (0, 0, img.width, img.height):
-                self._logger.warn("No-op crop parameters, skipping!")
-                return
-            self._logger.debug("Cropping \"{0}\" to x:{1} y:{2} w:{3} h:{4}"
-                               .format(fname, left, top, width, height))
-            try:
-                cropped = img.crop(left, top, width=width, height=height)
-                if HAS_JPEGTRAN:
-                    cropped.save(fname)
-                else:
-                    img.save(filename=fname)
-                    img.close()
-            except Exception as e:
-                self._logger.error("Cropping failed")
-                self._logger.exception(e)
-
-        fname = unicode(page.raw_image)
-        if async:
-            future = self._threadpool.submit(do_crop, fname, left, top, width,
-                                             height)
-            self._pending_tasks.append(future)
-            return future
-        else:
-            do_crop(fname, left, top, width, height)
-
     @property
     def out_files(self):
         out_path = self.path / 'data' / 'out'
@@ -773,6 +724,16 @@ class Workflow(object):
         """
         def from_dict(dikt):
             raw_image = self.path/dikt['raw_image']
+            if 'processing_params' not in dikt:
+                self._logger.debug(
+                    "Page {} does not have processing params set, "
+                    "determining from image.".format(dikt['capture_num']))
+                processing_params = {
+                    'crop': None,
+                    'rotation': util.get_rotation_from_exif(raw_image)
+                }
+            else:
+                processing_params = None
             processed_images = {}
             for plugname, fpath in dikt['processed_images'].iteritems():
                 relpath = self.path/fpath
@@ -787,7 +748,8 @@ class Workflow(object):
                         processed_images=processed_images,
                         page_label=dikt['page_label'],
                         sequence_num=dikt['sequence_num'],
-                        workflow_id=self.id)
+                        workflow_id=self.id,
+                        processing_params=processing_params)
         fpath = self.path / 'pagemeta.json'
         if not fpath.exists():
             return []
@@ -860,7 +822,19 @@ class Workflow(object):
                     else last_num+2)
         path = base_path / "{0:03}.{1}".format(next_num,
                                                'dng' if is_raw else 'jpg')
-        return Page(path, capture_num=next_num, workflow_id=self.id)
+
+        # Determine rotation
+        processing_params = {
+            'crop': None,
+            'rotation': 0
+        }
+        upside_down = self.config["device"]["upside_down"].get(bool)
+        if target_page == 'odd':
+            processing_params['rotation'] = 90 if upside_down else 270
+        else:
+            processing_params['rotation'] = 270 if upside_down else 90
+        return Page(path, capture_num=next_num, workflow_id=self.id,
+                    processing_params=processing_params)
 
     def prepare_capture(self):
         """ Prepare capture on devices and initialize trigger plugins. """
@@ -951,7 +925,7 @@ class Workflow(object):
             for dev in self.devices:
                 futures.append(executor.submit(dev.finish_capture))
         util.check_futures_exceptions(futures)
-        # NOTE: For performance reason, we only save the pages here, since
+        # NOTE: For performance reasons, we only save the pages here, since
         # the ongoing hashing slows things down considerably during capture
         self._save_pages()
         self._run_hook('finish_capture', self.devices, self.path)

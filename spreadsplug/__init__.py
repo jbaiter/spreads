@@ -23,9 +23,9 @@ with the application and supported by the spreads developers themselves.
 
 In alphabetical order:
 
-:py:mod:`spreadsplug.autorotate`
-    Postprocessing plugin to rotate captured images according to their EXIF
-    orientation tag.
+:py:mod:`spreadsplug.croprotate`
+    Postprocessing plugin to crop and rotate captured images according to their
+    page's postprocessing parameters.
 
 :py:mod:`spreadsplug.dev.chdkcamera`
     Driver for Canon cameras with the CHDK firmware.

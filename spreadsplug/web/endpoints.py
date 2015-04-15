@@ -942,25 +942,6 @@ def delete_page(workflow, number, page):
     return jsonify(dict(page=page))
 
 
-@app.route(
-    '/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>/crop',
-    methods=['POST'], defaults={'plugname': None})
-@inject_page
-def crop_workflow_image(workflow, number, img_type, plugname, page):
-    """ Crop a page image in place. """
-    # TODO: We have to update the checksum!
-    if img_type != 'raw':
-        raise ApiException("Can only crop raw images.", 400)
-    left = int(request.args.get('left', 0))
-    top = int(request.args.get('top', 0))
-    width = int(request.args.get('width', 0)) or None
-    height = int(request.args.get('height', 0)) or None
-    workflow.crop_page(page, left, top, width, height, async=True)
-    cache_key = "{0}.{1}.{2}".format(workflow.id, 'raw', page.raw_image.name)
-    cache.delete(cache_key)
-    return 'OK'
-
-
 @app.route('/api/workflow/<workflow:workflow>/page', methods=['DELETE'])
 def bulk_delete_pages(workflow):
     """ Delete multiple pages from a workflow with one request. """

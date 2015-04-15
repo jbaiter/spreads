@@ -39,6 +39,13 @@ import roman
 from colorama import Fore, Back, Style
 from pathlib import Path
 
+try:
+    from jpegtran import JPEGImage
+    HAS_JPEGTRAN = True
+except ImportError:
+    HAS_JPEGTRAN = False
+    from PIL import Image
+
 
 class SpreadsException(Exception):
     """ General exception """
@@ -210,6 +217,31 @@ def slugify(text, delimiter=u'-'):
         if word:
             result.append(word)
     return unicode(delimiter.join(result))
+
+
+def get_rotation_from_exif(imagepath):
+    """ Determine the rotation from an image's EXIF orientation tag.
+
+    :param imagepath:   Path to the image to read EXIF data from
+    :type imagepath:    :py:class:`pathlib.Path`
+    :return:            The rotation as a multiple of 90 degrees
+    :rtype:             int
+    """
+    exif_orientation = 0
+    if HAS_JPEGTRAN:
+        exif_orientation = JPEGImage(unicode(imagepath)).exif_orientation
+    else:
+        with Image(filename=unicode(imagepath)) as img:
+            exif_orientation = int(img.metadata['exif:Orientation'])
+
+    if exif_orientation == 3:
+        return 180
+    elif exif_orientation == 6:
+        return 270
+    elif exif_orientation == 8:
+        return 90
+    else:
+        return 0
 
 
 class _instancemethodwrapper(object):  # noqa

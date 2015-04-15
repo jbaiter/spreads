@@ -114,9 +114,7 @@ def test_get_preview_image(camera):
     assert camera.get_preview_image() == "foo"
 
 
-@mock.patch('spreadsplug.dev.chdkcamera.JPEGImage')
-def test_capture(jpeg, camera):
-    jpeg.return_value = mock.Mock()
+def test_capture(camera):
     camera._device.mode = 'rec'
     fpath = mock.MagicMock()
     fpath.__unicode__.return_value = '/tmp/000.jpg'
@@ -127,14 +125,9 @@ def test_capture(jpeg, camera):
     cap_args = tuple(camera._device.shoot.mock_calls[0])[-1]
     assert not cap_args['dng']
     assert cap_args['stream']
-    assert jpeg.called_once_with('/tmp/000.jpg')
-    assert jpeg.return_value.exif_orientation == 6
-    assert jpeg.return_value.save.called_once_with('/tmp/000.jpg')
 
 
-@mock.patch('spreadsplug.dev.chdkcamera.JPEGImage')
-def test_capture_raw(jpeg, camera):
-    jpeg.return_value = mock.Mock()
+def test_capture_raw(camera):
     camera.config['shoot_raw'] = True
     camera._device.mode = 'rec'
     fpath = mock.MagicMock()
@@ -146,18 +139,14 @@ def test_capture_raw(jpeg, camera):
     assert cap_args['dng']
 
 
-@mock.patch('spreadsplug.dev.chdkcamera.JPEGImage')
-def test_capture_noprepare(jpeg, camera):
-    jpeg.return_value = mock.Mock()
+def test_capture_noprepare(camera):
     camera._device.mode = 'play'
     camera.target_page = 'odd'
     camera.capture(mock.MagicMock())
     camera._device.switch_mode.assert_called_once_with("record")
 
 
-@mock.patch('spreadsplug.dev.chdkcamera.JPEGImage')
-def test_capture_noremote(jpeg, camera):
-    jpeg.return_value = mock.Mock()
+def test_capture_noremote(camera):
     camera._device.mode = 'rec'
     camera._can_remote = False
     camera.target_page = 'odd'

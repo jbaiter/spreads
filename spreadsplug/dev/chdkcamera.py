@@ -10,24 +10,6 @@ import chdkptp
 from spreads.config import OptionTemplate
 from spreads.plugin import DeviceDriver, DeviceFeatures, DeviceException
 
-try:
-    from jpegtran import JPEGImage
-
-    def update_exif_orientation(data, orientation):
-        img = JPEGImage(blob=data)
-        img.exif_orientation = orientation
-        return img.as_blob()
-except ImportError:
-    import pyexiv2
-
-    def update_exif_orientation(data, orientation):
-        metadata = pyexiv2.ImageMetadata.from_buffer(data)
-        metadata.read()
-        metadata['Exif.Image.Orientation'] = int(orientation)
-        metadata.write()
-        return metadata.buffer
-
-
 WHITEBALANCE_MODES = {
     'Auto': 0,
     'Daylight': 1,
@@ -250,13 +232,6 @@ class CHDKCameraDevice(DeviceDriver):
                 self.logger.exception(e)
                 raise e
 
-        # Set EXIF orientation
-        self.logger.debug("Setting EXIF orientation on captured image")
-        upside_down = self.config["upside_down"].get(bool)
-        if self.target_page == 'odd':
-            data = update_exif_orientation(data, 8 if upside_down else 6)
-        else:
-            data = update_exif_orientation(data, 6 if upside_down else 8)
         with path.open('wb') as fp:
             fp.write(data)
 

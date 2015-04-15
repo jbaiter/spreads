@@ -130,7 +130,7 @@ setup(
             "dummy=spreadsplug.dev.dummy:DummyDevice"
         ],
         'spreadsplug.hooks': [
-            "autorotate     =spreadsplug.autorotate:AutoRotatePlugin",
+            "croprotate     =spreadsplug.croprotate:CropRotatePlugin",
             "scantailor     =spreadsplug.scantailor:ScanTailorPlugin",
             "pdfbeads       =spreadsplug.pdfbeads:PDFBeadsPlugin",
             "djvubind       =spreadsplug.djvubind:DjvuBindPlugin",
@@ -155,7 +155,7 @@ setup(
     extras_require={
         "chdkcamera": ["jpegtran-cffi >= 0.4", "chdkptp.py >= 0.1.2"],
         "gphoto2camera": ["gphoto2-cffi >= 0.2"],
-        "autorotate": ["jpegtran-cffi >= 0.4"],
+        "croprotate": ["jpegtran-cffi >= 0.4", "Wand >= 0.3.5"],
         "gui": ["PySide >= 1.2.1"],
         "hidtrigger": ["hidapi-cffi >= 0.1"],
         "web": [
