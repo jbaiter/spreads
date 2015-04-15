@@ -55,6 +55,20 @@ def mock_dbus(tmpdir):
 
 
 @pytest.yield_fixture
+def mock_enabled_plugins():
+    exts = [mock.Mock(), mock.Mock(), mock.Mock()]
+    exts[0].name = "test_output"
+    exts[0].load.return_value = TestPluginOutput
+    exts[1].name = "test_process"
+    exts[1].load.return_value = TestPluginProcess
+    exts[2].name = "test_process2"
+    exts[2].load.return_value = TestPluginProcessB
+    with mock.patch('spreadsplug.web.endpoints.pkg_resources') as pkgr:
+        pkgr.iter_entry_points.return_value = exts
+        yield pkgr
+
+
+@pytest.yield_fixture
 def worker():
     from spreadsplug.web.worker import ProcessingWorker
     worker = ProcessingWorker()
@@ -79,39 +93,30 @@ def create_workflow(client, num_captures='random'):
     return data['id']
 
 
-def test_index(client):
+def test_index(client, mock_enabled_plugins):
     rv = client.get('/')
     assert "<title>spreads</title>" in rv.data
     assert "<script src=\"/static/bundle.js\"></script>" in rv.data
 
-    cfg = json.loads(re.findall(r"window.config = ({.*});", rv.data)[0])
+    bootstrap_data = json.loads(re.findall(r"window.bootstrapData = ({.*});",
+                                rv.data)[0])
+    cfg = bootstrap_data['AppStateStore']['config']
     assert cfg['plugins'] == ['test_output', 'test_process', 'test_process2']
     assert cfg['driver'] == 'testdriver'
     assert cfg['web']['mode'] == 'full'
-    templates = json.loads(re.findall(r"window.configTemplates = ({.*});",
-                                      rv.data)[0])
+    templates = bootstrap_data['AppStateStore']['configTemplates']
     assert 'a_boolean' in templates['test_process']
-    assert 'flip_target_pages' in templates['device']
     assert 'string' in templates['test_output']
 
 
-def test_get_plugins(client):
-    exts = [mock.Mock(), mock.Mock(), mock.Mock()]
-    exts[0].name = "test_output"
-    exts[0].load.return_value = TestPluginOutput
-    exts[1].name = "test_process"
-    exts[1].load.return_value = TestPluginProcess
-    exts[2].name = "test_process2"
-    exts[2].load.return_value = TestPluginProcessB
-    with mock.patch('spreadsplug.web.endpoints.pkg_resources') as pkgr:
-        pkgr.iter_entry_points.return_value = exts
-        rv = client.get('/api/plugins')
+def test_get_enabled_plugins(client, mock_enabled_plugins):
+    rv = client.get('/api/plugins/enabled')
     plugins = json.loads(rv.data)
     assert plugins['output'] == ["test_output"]
     assert plugins['postprocessing'] == ["test_process", "test_process2"]
 
 
-def test_get_plugin_templates(client):
+def test_get_plugin_templates(client, mock_enabled_plugins):
     rv = client.get('/api/templates')
     templates = json.loads(rv.data)
     assert 'a_boolean' in templates['test_process']
@@ -192,13 +197,13 @@ def test_get_page_image(client):
     wfid = create_workflow(client)
     with open(os.path.abspath('./tests/data/even.jpg'), 'rb') as fp:
         orig = fp.read()
-    fromapi = client.get('/api/workflow/{0}/page/0/raw'.format(wfid)).data
+    fromapi = client.get('/api/workflow/{0}/page/0/raw/data'.format(wfid)).data
     assert orig == fromapi
 
 
 def test_get_page_image_scaled(client):
     wfid = create_workflow(client)
-    rv = client.get('/api/workflow/{0}/page/0/raw?width=300'.format(wfid))
+    rv = client.get('/api/workflow/{0}/page/0/raw/data?width=300'.format(wfid))
     assert rv.status_code == 200
     img = jpegtran.JPEGImage(blob=rv.data)
     assert img.width == 300
