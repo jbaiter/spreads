@@ -24,17 +24,6 @@ export function makeUrl(...parts) {
   return parts.join("/");
 }
 
-export function makeJsonRequest(url, method, data) {
-  return fetch(url, {
-    method: method,
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
-}
-
 export function makeParams(params) {
   const encoded = map(params, (val, key) => {
     return [key, val].map(encodeURIComponent).join("=");

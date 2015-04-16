@@ -18,7 +18,7 @@
  * along with Spreads.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {makeJsonRequest, makeUrl as _makeUrl} from "utils/WebAPIUtils.js";
+import {fetchJson, makeUrl as _makeUrl} from "utils/WebAPIUtils.js";
 import alt from "alt";
 
 const makeUrl = _makeUrl.bind(null, "/api/workflow");
@@ -37,47 +37,47 @@ class WorkflowActions {
 
   create(data) {
     this.dispatch();
-    makeJsonRequest(makeUrl(), "post", data)
+    fetchJson(makeUrl(), {method: "post", body: data})
       .then((resp) => this.actions.remotelyCreated(resp.json()))
       .catch((error) => this.actions.actionFailed(error.json()));
   }
 
   update(data) {
     this.dispatch();
-    makeJsonRequest(makeUrl(data.id), "post", data)
+    fetchJson(makeUrl(data.id), {method: "post", body: data})
       .then((resp) => this.actions.remotelyUpdated(resp.json()))
       .catch((error) => this.actions.actionFailed(error.json()));
   }
 
   delete(workflowId) {
     this.dispatch();
-    makeJsonRequest(makeUrl(workflowId), "delete", {})
+    fetchJson(makeUrl(workflowId), {method: "delete"})
       .then((resp) => this.actions.remotelyDeleted(resp.json()))
       .catch((error) => this.actions.actionFailed(error.json()));
   }
 
   submitToRemote(params) {
     this.dispatch();
-    makeJsonRequest(makeUrl(params.workflowId, "submit"), "post", params)
+    fetchJson(makeUrl(params.workflowId, "submit"), {method: "post", body: params})
       .then((resp) => this.actions.submissionProgressed(resp.json()))
       .catch((error) => this.actions.actionFailed(error.json()));
   }
 
   transferToStorage(params) {
     this.dispatch();
-    makeJsonRequest(makeUrl(params.workflowId, "transfer"), "post", params)
+    fetchJson(makeUrl(params.workflowId, "transfer"), {method: "post", body: params})
       .then((resp) => this.actions.transferProgressed(resp.json()))
       .catch((error) => this.actions.actionFailed(error.json()));
   }
 
   startPostprocessing(params) {
-    makeJsonRequest(makeUrl(params.workflowId, "process"), "post", params)
+    fetchJson(makeUrl(params.workflowId, "process"), {method: "post", body: params})
       .then(() => this.dispatch())
       .catch(error => this.actions.actionFailed(error.json()));
   }
 
   startOutputting(params) {
-    makeJsonRequest(makeUrl(params.workflowId, "output"), "post", params)
+    fetchJson(makeUrl(params.workflowId, "output"), {method: "post", body: params})
       .then(() => this.dispatch())
       .catch(error => this.actions.actionFailed(error.json()));
   }

@@ -18,7 +18,7 @@
  * along with Spreads.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {makeJsonRequest} from "utils/WebAPIUtils.js";
+import {fetchJson} from "utils/WebAPIUtils.js";
 import alt from "alt";
 
 class ConfigActions {
@@ -27,7 +27,7 @@ class ConfigActions {
   }
 
   update(config) {
-    makeJsonRequest("/api/config", "put", config)
+    fetchJson("/api/config", {method: "put", body: config})
       .then((resp) => this.actions.remotelyUpdated(resp.json()))
       .catch((error) => this.actions.updateFailed(error.json()));
   }
