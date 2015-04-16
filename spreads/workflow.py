@@ -482,8 +482,8 @@ class Workflow(object):
         self.config['plugins'] = [name for name, cls in plugin_classes]
         self._save_config()
 
-        self.pages = self._load_pages()
-        self.table_of_contents = self._load_toc()
+        self._load_pages()
+        self._load_toc()
 
         if is_new:
             on_created.send(self, workflow=self)
@@ -685,7 +685,6 @@ class Workflow(object):
 
         :param data:    List of dictionaries to be deserialized
         :type data:     list of dict
-        :rtype:         list of :py:class:`TocEntry`
         """
         def from_dict(dikt):
             start_page, end_page = None, None
@@ -707,7 +706,7 @@ class Workflow(object):
                 return []
             with toc_path.open('r') as fp:
                 data = json.load(fp)
-        return [from_dict(e) for e in data]
+        self.table_of_contents = [from_dict(e) for e in data]
 
     def _save_toc(self):
         """ Write TOC entries to ``toc.json`` in bag. """
@@ -727,6 +726,8 @@ class Workflow(object):
         :returns:   Deserialized pages
         :rtype:     list of :py:class:`Page`
         """
+        were_converted = []
+
         def from_dict(dikt):
             raw_image = self.path/dikt['raw_image']
             if 'processing_params' not in dikt:
@@ -735,10 +736,11 @@ class Workflow(object):
                     "determining from image.".format(dikt['capture_num']))
                 processing_params = {
                     'crop': None,
-                    'rotation': util.get_rotation_from_exif(raw_image)
+                    'rotate': util.get_rotation_from_exif(raw_image)
                 }
+                were_converted.append(dikt['capture_num'])
             else:
-                processing_params = None
+                processing_params = dikt['processing_params']
             processed_images = {}
             for plugname, fpath in dikt['processed_images'].iteritems():
                 relpath = self.path/fpath
@@ -757,10 +759,19 @@ class Workflow(object):
                         processing_params=processing_params)
         fpath = self.path / 'pagemeta.json'
         if not fpath.exists():
-            return []
-        with fpath.open('r') as fp:
-            return sorted([from_dict(p) for p in json.load(fp)],
-                          key=lambda p: p.sequence_num)
+            raw_path = (self.path/"data"/"raw")
+            self.pages = [Page(raw_image=fp, workflow_id=self.id)
+                          for fp in raw_path.iterdir()]
+            were_converted.extend([p.capture_num for p in self.pages])
+        else:
+            with fpath.open('r') as fp:
+                self.pages = sorted([from_dict(p) for p in json.load(fp)],
+                                    key=lambda p: p.sequence_num)
+        if were_converted:
+            self._logger.info(
+                "Page metadata was converted from a previous version, saving "
+                "changes to disk.")
+            self._save_pages()
 
     def _save_pages(self):
         """ Write pages to ``pagemeta.json`` in bag. """
@@ -831,13 +842,13 @@ class Workflow(object):
         # Determine rotation
         processing_params = {
             'crop': None,
-            'rotation': 0
+            'rotate': 0
         }
         upside_down = self.config["device"]["upside_down"].get(bool)
         if target_page == 'odd':
-            processing_params['rotation'] = 90 if upside_down else 270
+            processing_params['rotate'] = 90 if upside_down else 270
         else:
-            processing_params['rotation'] = 270 if upside_down else 90
+            processing_params['rotate'] = 270 if upside_down else 90
         return Page(path, capture_num=next_num, workflow_id=self.id,
                     processing_params=processing_params)
 

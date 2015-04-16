@@ -237,9 +237,9 @@ def get_rotation_from_exif(imagepath):
     if exif_orientation == 3:
         return 180
     elif exif_orientation == 6:
-        return 270
-    elif exif_orientation == 8:
         return 90
+    elif exif_orientation == 8:
+        return 270
     else:
         return 0
 
