@@ -141,8 +141,9 @@ class Page(object):
     :attr processing_params: A dictionary of parameters that are to be used by
                              postprocessing plugins. Currently supported
                              keys are 'rotate' (int, a multiple of 90) and
-                             'crop' (a 4-tuple of (x, y, width, height),
-                             relative to the unrotated raw image).
+                             'crop' (a 4-tuple of (x, y, width, height) that
+                             defines the area to be cropped, as floating point
+                             values relative to the uncropped image).
     """
     # FIXME: This type is insufficient for the case where the raw images
     # contain two individual pages, i.e. the whole bookspreads was captured in

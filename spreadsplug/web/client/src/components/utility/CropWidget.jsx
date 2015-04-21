@@ -27,11 +27,10 @@ import ResponsiveMixin from "components/utility/ResponsiveMixin";
 // TODO: Rendering the image into a canvas is *really* slow on mobile browsers.
 //       Consider using the DOM for rendering the image and only drawing the
 //       rectangle using the canvas.
-// TODO: Optionally show inputs for manually adjusting the values
 
-// Border length of border hitboxes
+// Border length of border hitboxes in absolute pixels
 const HITBOX_LENGTH = 35;
-// Minimum border length of crop box in either dimension
+// Minimum border length of crop box in either dimension in absolute pixels
 const MINIMUM_LENGTH = 15;
 // Color and alpha of the crop box
 const CROPBOX_COLOR = "rgba(0,255,0,0.5)";
@@ -42,8 +41,6 @@ export default React.createClass({
   propTypes: {
     /** Source image URL */
     imageSrc: PropTypes.oneOfType([PropTypes.string, PropTypes.func]).isRequired,
-    /** Native size of the image */
-    nativeSize: PropTypes.object,
     /** Function that is called when the user decides to save the crop
       * selection */
     onSave: PropTypes.func.isRequired,
@@ -55,12 +52,7 @@ export default React.createClass({
   getDefaultProps() {
     return {
       showInputs: false,
-      initialCropParams: {
-        x: undefined,
-        y: undefined,
-        width: undefined,
-        height: undefined
-      },
+      initialCropParams: null,
       container: () => this.refs.cropContainer
     };
   },
@@ -76,7 +68,9 @@ export default React.createClass({
       dragMode: null,
       /** The parameters for our cropping box, has properties `x`, `y`, `width`
        *  and `height`. */
-      cropParams: this.props.initialCropParams,
+      cropParams: this.props.initialCropParams || {
+        x: undefined, y: undefined, width: undefined, height: undefined
+      },
       /** DOM node for full resolution source image, used to obtain data for
        *  the offscreen canvas. */
       sourceImage: this.loadImage(true),
@@ -132,14 +126,14 @@ export default React.createClass({
    * Outside of current crop-box means "default" (= clear old and resize-se)
    */
   getDragMode({clientX, clientY}) {
-    const {canvasPosition: canvas, cropParams: cropBox} = this.state;
+    const {canvasPosition: canvas, cropParams: cropBox, size} = this.state;
     if (!cropBox.width) {
       return "default";
     }
-    const offsetLeft   = clientX - canvas.x - cropBox.x,
-          offsetTop    = clientY - canvas.y - cropBox.y,
-          offsetRight  = cropBox.width - offsetLeft,
-          offsetBottom = cropBox.height - offsetTop;
+    const offsetLeft   = clientX - canvas.x - (cropBox.x * size.width),
+          offsetTop    = clientY - canvas.y - (cropBox.y * size.height),
+          offsetRight  = (cropBox.width * size.width) - offsetLeft,
+          offsetBottom = (cropBox.height * size.height) - offsetTop;
     const cornerEdge = HITBOX_LENGTH;
 
     if (offsetLeft < 0 || offsetTop < 0 || offsetRight < 0 || offsetBottom < 0) {
@@ -203,10 +197,10 @@ export default React.createClass({
     const ctx = this.state.canvasNode.getContext("2d");
     ctx.drawImage(this.state.offscreenCanvasNode, 0, 0);
     if (this.state.cropParams.width) {
-      const {x, y, width, height} = this.state.cropParams;
+      const {cropParams: {x, y, width, height}, size} = this.state;
       ctx.fillStyle = CROPBOX_COLOR;
       ctx.strokeStyle = CROPBOX_COLOR;
-      ctx.fillRect(x, y, width, height);
+      ctx.fillRect(x * size.width, y * size.height, width * size.width, height * size.height);
     }
     if (this.state.redrawPending) {
       this.setState({
@@ -235,47 +229,51 @@ export default React.createClass({
   /** Makes sure that the newly calculated crop box does not reach beyond
    *  the canvas area in any dimension. */
   sanitizeCropBox(cropBox) {
-    const {dragMode} = this.state;
+    const {dragMode, size: {width, height}} = this.state;
     if (cropBox.x < 0) {
       cropBox.x = 0;
-    } else if (cropBox.x >= this.state.size.width) {
-      cropBox.x = this.state.size.width - 15;
+    } else if (cropBox.x >= 1) {
+      // TODO: Rly?
+      cropBox.x = 1 - (MINIMUM_LENGTH / width);
     }
-    if (cropBox.x + cropBox.width > this.state.size.width) {
+    if ((cropBox.x + cropBox.width) > 1) {
       if (dragMode === "move") {
-        cropBox.x = this.state.size.width - cropBox.width;
+        cropBox.x = 1 - cropBox.width;
       } else {
-        cropBox.width = this.state.size.width - cropBox.x;
+        cropBox.width = 1 - cropBox.x;
       }
     }
     if (cropBox.y < 0) {
       cropBox.y = 0;
-    } else if (cropBox.y >= this.state.size.height) {
-      cropBox.y = this.state.size.height - 15;
+    } else if (cropBox.y >= 1) {
+      cropBox.y = 1 - (MINIMUM_LENGTH / height);
     }
-    if (cropBox.y + cropBox.height > this.state.size.height) {
+    if ((cropBox.y + cropBox.height) > 1) {
       if (dragMode === "move") {
-        cropBox.y = this.state.size.height - cropBox.height;
+        cropBox.y = 1 - cropBox.height;
       } else {
-        cropBox.height = this.state.size.height - cropBox.y;
+        cropBox.height = 1 - cropBox.y;
       }
     }
-    if (cropBox.width < MINIMUM_LENGTH) {
-      cropBox.width = MINIMUM_LENGTH;
+    if (cropBox.width < (MINIMUM_LENGTH / width)) {
+      cropBox.width = MINIMUM_LENGTH / width;
     }
-    if (cropBox.height < MINIMUM_LENGTH) {
-      cropBox.height = MINIMUM_LENGTH;
+    if (cropBox.height < (MINIMUM_LENGTH / width)) {
+      cropBox.height = MINIMUM_LENGTH / height;
     }
     return cropBox;
   },
 
   /** Updates the cropBox from the movement delta. */
   updateCropBox(movementX, movementY) {
-    let {cropParams: cropBox, dragMode} = this.state;
+    let {cropParams: cropBox, dragMode, size} = this.state;
 
     if (movementX === 0 && movementY === 0) {
       return;
     }
+
+    movementX /= size.width;
+    movementY /= size.height;
 
     const northAreas = ["nw-resize", "n-resize", "ne-resize"],
           eastAreas  = ["ne-resize", "e-resize", "se-resize"],
@@ -334,19 +332,6 @@ export default React.createClass({
     return normalized;
   },
 
-  getNativeCropBox() {
-    if (!this.props.nativeSize) {
-      return null;
-    }
-    const factor = this.props.nativeSize.width / this.state.size.width;
-    return {
-      x: Math.ceil(factor * this.state.cropParams.x),
-      y: Math.ceil(factor * this.state.cropParams.y),
-      width: Math.ceil(factor * this.state.cropParams.width),
-      height: Math.ceil(factor * this.state.cropParams.height)
-    };
-  },
-
   // =============== Event handlers ==================
   /** Gets called by the `ResponsiveMixin` whenever the container size changes.
    *  Reload the image, updates the canvas sizes and stores references to them
@@ -386,11 +371,12 @@ export default React.createClass({
       dragMode: dragMode === "default" ? "se-resize" : dragMode
     };
     if (dragMode === "default") {
+      // TODO: Make relative
       newState.cropParams = {
-        x: e.clientX - this.state.canvasPosition.x,
-        y: e.clientY - this.state.canvasPosition.y,
-        width: MINIMUM_LENGTH,
-        height: MINIMUM_LENGTH
+        x: (e.clientX - this.state.canvasPosition.x) / this.state.size.width,
+        y: (e.clientY - this.state.canvasPosition.y) / this.state.size.height,
+        width: MINIMUM_LENGTH / this.state.size.width,
+        height: MINIMUM_LENGTH / this.state.size.height
       };
     }
     this.setState(newState, this.requestRedraw);
@@ -432,31 +418,28 @@ export default React.createClass({
   },
 
   handleManualUpdate({target: {name, value}}) {
-    const factor = this.props.nativeSize ?
-      this.props.nativeSize.width / this.state.size.width : 1;
     const paramKey = name.substr(5);
     let cropBox = clone(this.state.cropParams);
-    const currentValue = cropBox[paramKey];
-    const newValue = value / factor;
-    const roundFunc = newValue > currentValue ? Math.ceil : Math.floor;
-    cropBox[paramKey] = roundFunc(newValue);
+    //const newValue = value / factor;
+    //const roundFunc = newValue > currentValue ? Math.ceil : Math.floor;
+    //cropBox[paramKey] = roundFunc(newValue);
+    cropBox[paramKey] = value;
     this.setState({
       cropParams: cropBox
     }, this.redraw);
   },
 
   render() {
-    const nativeBox = this.getNativeCropBox();
     return (
       <div ref="cropContainer" className="crop-container">
         <a className="crop-discard" onClick={this.handleDiscardCurrent}>
           <Icon name="trash" />
         </a>
         <a className="crop-save"
-            onClick={() => this.props.onSave(nativeBox || this.state.cropParams)}>
+            onClick={() => this.props.onSave(this.state.cropParams)}>
           <Icon name="save" />
         </a>
-        {nativeBox &&
+        {this.state.cropParams.width &&
         <div className="crop-values">
           <div className="crop-values-group">
             <label htmlFor="crop-x">
@@ -464,7 +447,7 @@ export default React.createClass({
             </label>
             <input type="number" name="crop-x" min={MINIMUM_LENGTH}
                    onChange={this.handleManualUpdate}
-                   value={nativeBox.x} />
+                   value={this.state.cropParams.x} />
           </div>
           <div className="crop-values-group">
             <label htmlFor="crop-y">
@@ -472,7 +455,7 @@ export default React.createClass({
             </label>
             <input type="number" name="crop-y" min={MINIMUM_LENGTH}
                    onChange={this.handleManualUpdate}
-                   value={nativeBox.y} />
+                   value={this.state.cropParams.y} />
           </div>
           <div className="crop-values-group">
             <label htmlFor="crop-width">
@@ -480,7 +463,7 @@ export default React.createClass({
             </label>
             <input type="number" name="crop-width" min={MINIMUM_LENGTH}
                    onChange={this.handleManualUpdate}
-                   value={nativeBox.width} />
+                   value={this.state.cropParams.width} />
           </div>
           <div className="crop-values-group">
             <label htmlFor="crop-height">
@@ -488,7 +471,7 @@ export default React.createClass({
             </label>
             <input type="number" name="crop-height" min={MINIMUM_LENGTH}
                    onChange={this.handleManualUpdate}
-                   value={nativeBox.height} />
+                   value={this.state.cropParams.height} />
           </div>
         </div>}
         <canvas width={this.state.size.width} height={this.state.size.height}

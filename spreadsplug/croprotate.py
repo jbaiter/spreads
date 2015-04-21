@@ -46,7 +46,8 @@ def transform_image(in_path, out_path, cropbox, angle):
     :param out_path:    Path where rotated image should be written to
     :type out_path:     unicode
     :param cropbox:     A 4-tuple of (x, y, width, height) that defines
-                        the area to be cropped
+                        the area to be cropped, as floating point values
+                        relative to the uncropped image.
     :type cropbox:      4-tuple of int
     :param angle:       Angle to rotate by, a multiple of 90
     :type angle:        int
