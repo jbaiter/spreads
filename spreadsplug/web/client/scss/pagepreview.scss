@@ -1,0 +1,24 @@
+.page-preview {
+  &-container {
+    margin-top: 1em;
+  }
+
+  &-content {
+    position: relative;
+    text-align: center;
+
+    img {
+      margin: 0;
+    }
+  }
+
+  &-crop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 60px;
+    background-color: rgba(0,255,0,0.5);
+  }
+}
+
