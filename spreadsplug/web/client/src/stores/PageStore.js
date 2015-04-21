@@ -29,12 +29,17 @@ class PageStore {
     this.bindListeners({
       handleWorkflowCreated: WorkflowActions.REMOTELY_CREATED,
       handleWorkflowDeleted: WorkflowActions.REMOTELY_DELETED,
-      handleDeleted: PageActions.REMOTELY_DELETED
+      handleDeleted: PageActions.REMOTELY_DELETED,
+      handleUpdated: PageActions.REMOTELY_UPDATED
     });
   }
 
   handleDeleted(page) {
     delete this.pages[page.workflow_id][page.capture_num];
+  }
+
+  handleUpdated(page) {
+    this.pages[page.workflow_id][page.capture_num] = page;
   }
 
   handleWorkflowCreated(workflow) {

@@ -67,7 +67,10 @@ export function fetchChecked(url, options={}) {
     });
 }
 
-export function fetchJson(url, options) {
+export function fetchJson(url, options={}) {
+  if (!options.headers) {
+    options.headers = {};
+  }
   Object.assign(options.headers, {
       "Accept": "application/json",
       "Content-Type": "application/json"});

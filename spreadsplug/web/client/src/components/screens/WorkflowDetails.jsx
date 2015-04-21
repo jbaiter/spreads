@@ -24,6 +24,7 @@ import ListenerMixin from "alt/mixins/ListenerMixin";
 import values from "lodash/object/values";
 import classNames from "classnames";
 
+import PageActions from "actions/PageActions.js";
 import workflowStore from "stores/WorkflowStore.js";
 import pageStore from "stores/PageStore.js";
 import {getImageUrl} from "utils/WebAPIUtils";
@@ -58,13 +59,13 @@ export default React.createClass({
 
   handleWorkflowChange() {
     this.setState({
-      workflow: workflowStore.getState()[this.props.params.id]
+      workflow: workflowStore.getState().workflows[this.props.params.id]
     });
   },
 
   handlePageChange() {
     this.setState({
-      pages: pageStore.getState()[this.props.params.id]
+      pages: pageStore.getState().pages[this.props.params.id]
     });
   },
 
