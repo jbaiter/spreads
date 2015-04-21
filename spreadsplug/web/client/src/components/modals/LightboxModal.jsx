@@ -25,6 +25,7 @@ import FullscreenMixin from "react-fullscreen-component";
 import Icon from "components/utility/Icon";
 import ResponsiveImage from "components/utility/ResponsiveImage";
 import CropWidget from "components/utility/CropWidget";
+import PagePreview from "components/utility/PagePreview";
 import {getImageUrl, fetchJson} from "utils/WebAPIUtils";
 
 export default React.createClass({
@@ -119,10 +120,12 @@ export default React.createClass({
       }
       return (<CropWidget imageSrc={this.getImageSrc} onSave={this.props.onCropped}
                           nativeSize={this.state.imageNativeSize}
+                          initialCropParams={this.state.currentPage.processing_params.crop}
                           container={() => this.refs.container} />);
     } else {
-      return (<ResponsiveImage src={this.getImageSrc}
-                               container={() => this.refs.container} />);
+      return (
+        <PagePreview page={this.state.currentPage}
+                     responsiveContainer={() => this.refs.container} />);
     }
   },
 

@@ -22,11 +22,13 @@ import React, {PropTypes} from "react";
 import {Grid, Row, Col, ModalTrigger, ButtonGroup, Button} from "react-bootstrap";
 import ListenerMixin from "alt/mixins/ListenerMixin";
 import values from "lodash/object/values";
+import classNames from "classnames";
 
 import workflowStore from "stores/WorkflowStore.js";
 import pageStore from "stores/PageStore.js";
 import {getImageUrl} from "utils/WebAPIUtils";
 import Pagination from "components/utility/Pagination";
+import PagePreview from "components/utility/PagePreview";
 import Metadata from "components/utility/Metadata";
 import Icon from "components/utility/Icon";
 import LightboxModal from "components/modals/LightboxModal";
@@ -72,6 +74,17 @@ export default React.createClass({
     });
   },
 
+  handlePageCropped(cropParams) {
+    PageActions.updateOne({
+      "workflow_id": this.state.showInLightbox.workflow_id,
+      "capture_num": this.state.showInLightbox.capture_num,
+      "processing_params": {crop: cropParams}
+    });
+    this.setState({
+      showInLightbox: null
+    });
+  },
+
   getPageNum() {
     return Math.floor(this.state.pageOffset / this.state.perPage) + 1;
   },
@@ -111,13 +124,11 @@ export default React.createClass({
           <Row>
             {values(pages).slice(pageOffset, pageOffset + perPage)
               .map((page) => {
-                const previewUrl = getImageUrl({page, thumbnail: true});
                 return (
                   <Col xs={6} md={3} lg={2} key={page.capture_num}>
-                    <a className="thumbnail"
-                       onClick={() => this.setState({showInLightbox: page})}>
-                      <img src={previewUrl} className="img-responsive"/>
-                    </a>
+                    <PagePreview page={page}
+                                 thumbnail={true}
+                                 onClick={() => this.setState({showInLightbox: page})} />
                   </Col>
                 );
               })}
@@ -126,10 +137,10 @@ export default React.createClass({
         <Pagination pageNum={this.getPageNum()} totalPages={totalPages}
                     onPageChange={this.handleGridBrowse} rangeDisplay={3}
                     marginDisplay={1} />
-        {this.state.showInLightbox !== undefined &&
+        {this.state.showInLightbox &&
           <LightboxModal pages={values(this.state.pages)}
                          startPage={this.state.showInLightbox}
-                         enableCrop={true} onCropped={console.log.bind(console)}
+                         enableCrop={true} onCropped={this.handlePageCropped}
                          onRequestHide={() => this.setState({showInLightbox: undefined})}/>}
       </div>
     );
