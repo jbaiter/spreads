@@ -25,7 +25,10 @@ export default {
     /** React element to which the component should adapt.
      *  Can be passed a function for lazy-loading the element.
      *  Alternatively, make sure there is a `container` ref. */
-    container: PropTypes.oneOfType([PropTypes.element, PropTypes.func])
+    container: PropTypes.oneOfType([PropTypes.element, PropTypes.func]),
+    /** Callback for when the size is changed. Gets passed a {width, height}
+     *  object. */
+    onSizeChanged: PropTypes.func
   },
 
   getInitialState() {
@@ -59,7 +62,6 @@ export default {
       return;
     }
     if (!this.state.imageSize) {
-      console.log("No image yet");
       return;
     }
     const {width: imgWidth, height: imgHeight} = this.state.imageSize;
@@ -70,6 +72,13 @@ export default {
       container = React.findDOMNode(this.props.container());
     } else {
       container = React.findDOMNode(this.refs.container);
+    }
+    const onSizeChanged = this.props.onSizeChanged || this.onSizeChanged;
+    if (!container) {
+      if (onSizeChanged) {
+        onSizeChanged(this.state.imageSize);
+      }
+      return;
     }
     const containerAspect = container.offsetWidth / container.offsetHeight;
     const imageAspect = imgWidth / imgHeight;
@@ -87,8 +96,8 @@ export default {
     this.setState({
       size
     });
-    if (this.onSizeChanged) {
-      this.onSizeChanged();
+    if (onSizeChanged) {
+      onSizeChanged(this.state.size);
     }
   }
 }
