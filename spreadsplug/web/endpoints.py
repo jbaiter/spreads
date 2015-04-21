@@ -944,7 +944,7 @@ def update_page(workflow, number, page):
     if "processing_params" in updated_data:
         page.processing_params.update(updated_data["processing_params"])
     workflow._save_pages()
-    return jsonify(page.to_dict())
+    return jsonify(dict(page=page))
 
 
 @app.route('/api/workflow/<workflow:workflow>/page', methods=['PUT'])
@@ -973,9 +973,9 @@ def bulk_update_pages(workflow):
 def delete_page(workflow, number, page):
     """ Remove a single page from a workflow. """
     # Get data now since we won't have a reference to it after we delete
-    data = json.dumps(page)
+    resp = jsonify(page=page)
     workflow.remove_pages(page)
-    return make_response(data, 200, {'Content-Type': 'application/json'})
+    return resp
 
 
 @app.route('/api/workflow/<workflow:workflow>/page', methods=['DELETE'])
@@ -983,11 +983,11 @@ def bulk_delete_pages(workflow):
     """ Delete multiple pages from a workflow with one request. """
     cap_nums = [p['capture_num'] for p in json.loads(request.data)['pages']]
     to_delete = [p for p in workflow.pages if p.capture_num in cap_nums]
-    data = json.dumps(to_delete)
+    resp = jsonify(pages=to_delete)
     logger.debug("Bulk removing from workflow {0}: {1}".format(
         workflow.id, to_delete))
     workflow.remove_pages(*to_delete)
-    return make_response(data, 200, {'Content-Type': 'application/json'})
+    return resp
 
 
 # ================= #

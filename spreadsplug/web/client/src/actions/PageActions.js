@@ -32,7 +32,7 @@ class PageActions {
     fetchJson(
       makeUrl("/api/workflow", data.workflow_id, "page", data.capture_num),
       {method: "put", body: data})
-      .then((data) => this.actions.remotelyUpdated(data))
+      .then((data) => this.actions.remotelyUpdated(data.page))
       .catch((error) => this.actions.actionFailed(error));
   }
 
@@ -41,7 +41,7 @@ class PageActions {
     fetchJson(
       makeUrl("/api/workflow", pages[0].workflow_id, "page"),
       {method: "put", body: {pages}})
-      .then((data) => this.actions.remotelyUpdated(data))
+      .then((data) => this.actions.remotelyUpdated(data.pages))
       .catch((error) => this.actions.actionFailed(error));
   }
 
@@ -49,7 +49,7 @@ class PageActions {
     this.dispatch();
     fetchJson(makeUrl("/api/workflow", workflowId, "page", pageId),
               {method: "delete"})
-      .then((data) => this.actions.remotelyDeleted(data))
+      .then((data) => this.actions.remotelyDeleted(data.page))
       .catch((error) => this.actions.actionFailed(error));
   }
 
@@ -57,7 +57,7 @@ class PageActions {
     this.dispatch();
     fetchJson(makeUrl("/api/workflow", workflowId, "page"),
                       {method: "delete", body: {pages: pageIds}})
-      .then((data) => this.actions.remotelyDeleted(data))
+      .then((data) => this.actions.remotelyDeleted(data.pages))
       .catch((error) => this.actions.actionFailed(error));
   }
 }
