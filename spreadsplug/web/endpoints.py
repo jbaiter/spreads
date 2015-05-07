@@ -46,7 +46,7 @@ from spreads.workflow import Workflow, ValidationError
 from spreadsplug.web.app import app
 from discovery import discover_servers
 from util import (WorkflowConverter, get_thumbnail, scale_image, convert_image,
-                  get_image_size)
+                  get_image_size, cache as clientcache)
 
 if is_os('windows'):
     from util import find_stick_win as find_stick
@@ -847,6 +847,7 @@ def get_all_pages(workflow):
                          200, {'Content-Type': 'application/json'})
 
 
+@clientcache()
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>'
            '/data', defaults={'plugname': None})
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>'
@@ -903,6 +904,7 @@ def get_page_image(fpath, page, workflow, number, img_type, plugname):
     return send_file(unicode(fpath))
 
 
+@clientcache()
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>'
            '/size', defaults={'plugname': None})
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>'
@@ -913,6 +915,7 @@ def get_page_image_size(fpath, page, workflow, number, img_type, plugname):
     return jsonify({"width": width, "height": height})
 
 
+@clientcache()
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>/'
            'thumb', defaults={'plugname': None})
 @app.route('/api/workflow/<workflow:workflow>/page/<int:number>/<img_type>/'

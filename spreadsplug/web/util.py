@@ -24,7 +24,10 @@ import time
 import traceback
 import uuid
 from datetime import datetime
+from flask import make_response
+from functools import wraps
 from io import BufferedIOBase, UnsupportedOperation
+from wsgiref.handlers import format_date_time
 
 from flask import abort, url_for
 from flask.json import JSONEncoder
@@ -290,3 +293,48 @@ def calculate_zipsize(frecords):
         size += os.path.getsize(filename)
     size += 22  # End of central directory record (EOCD)
     return size
+
+
+def cache(expires=24*60*60, round_to_minute=False):
+    """
+    Add Flask cache response headers based on expires in seconds.
+
+    If expires is None, caching will be disabled.
+    Otherwise, caching headers are set to expire in now + expires seconds
+
+    If round_to_minute is True, then it will always expire at the start of a
+    minute (seconds = 0).
+
+    Example usage:
+
+    @app.route('/map')
+    @cache(expires=60)
+    def index():
+      return render_template('index.html')
+
+    Code by Glenn Robertson, from his Gist:
+    <https://gist.github.com/glenrobertson/954da3acec84606885f5>
+    """
+    def cache_decorator(view):
+        @wraps(view)
+        def cache_func(*args, **kwargs):
+            now = datetime.datetime.now()
+            response = make_response(view(*args, **kwargs))
+            response.headers['Last-Modified'] = (
+                format_date_time(time.mktime(now.timetuple())))
+            if expires is None:
+                response.headers['Cache-Control'] = ", ".join(
+                    ['no-store', 'no-cache', 'must-revalidate', 'post-check=0',
+                     'pre-check=0', 'max-age=0'])
+                response.headers['Expires'] = '-1'
+            else:
+                expires_time = now + datetime.timedelta(seconds=expires)
+                if round_to_minute:
+                    expires_time = expires_time.replace(second=0,
+                                                        microsecond=0)
+                response.headers['Cache-Control'] = 'public'
+                response.headers['Expires'] = format_date_time(
+                    time.mktime(expires_time.timetuple()))
+            return response
+        return cache_func
+    return cache_decorator
