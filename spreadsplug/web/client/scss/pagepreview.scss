@@ -1,6 +1,7 @@
 .page-preview {
   &-container {
-    margin-top: 1em;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   &-content {
@@ -8,6 +9,7 @@
     text-align: center;
 
     img {
+      width: 100%;
       margin: 0;
     }
   }

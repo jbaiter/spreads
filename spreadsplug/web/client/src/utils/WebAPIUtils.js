@@ -36,6 +36,10 @@ export function makeParams(params) {
 }
 
 export function getImageUrl({page, imageType="raw", thumbnail=false, width=null}) {
+  // TODO: Only allow three image sizes:
+  //   thumb -> width: 200px
+  //   medium -> width: 480px
+  //   full -> no width, full resolution
   let baseUrl;
   if (imageType === "raw") {
     baseUrl = page.raw_image.url;

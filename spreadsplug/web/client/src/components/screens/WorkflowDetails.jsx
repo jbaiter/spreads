@@ -34,6 +34,24 @@ import Metadata from "components/utility/Metadata";
 import Icon from "components/utility/Icon";
 import LightboxModal from "components/modals/LightboxModal";
 
+const PageContainer = React.createClass({
+  displayName: "PageContainer",
+  propTypes: {
+    page: PropTypes.object.isRequired,
+    onSelected: PropTypes.func.isRequired,
+    onClick: PropTypes.func.isRequired
+  },
+
+  render() {
+    return (
+      <div className="page-container">
+        <PagePreview page={this.props.page} thumbnail={true}
+                     onClick={this.props.onClick} />
+      </div>
+    );
+  }
+});
+
 export default React.createClass({
   displayName: "WorkflowDetails",
   mixins: [ListenerMixin],
@@ -90,28 +108,6 @@ export default React.createClass({
     return Math.floor(this.state.pageOffset / this.state.perPage) + 1;
   },
 
-  getLightboxContent(pageId, isFullscreen) {
-    // Adjust pagination
-    const {pages, pageOffset, perPage} = this.state;
-    if (Object.keys(pages).indexOf(pageId) > pageOffset + perPage) {
-      this.setState({
-        pageOffset: pageOffset + perPage
-      });
-    }
-
-    const page = this.state.pages[pageId];
-    let imageOpts = {page};
-    if (!isFullscreen) {
-      imageOpts.width = 640;
-    }
-    const scaledImageUrl = getImageUrl(imageOpts);
-
-    return {
-      title: `Page ${page.page_label}`,
-      main: <img src={scaledImageUrl} />
-    };
-  },
-
   render() {
     const {pages, pageOffset, perPage} = this.state;
     const totalPages = Math.ceil(Object.keys(pages).length / perPage);
@@ -127,9 +123,9 @@ export default React.createClass({
               .map((page) => {
                 return (
                   <Col xs={6} md={3} lg={2} key={page.capture_num}>
-                    <PagePreview page={page}
-                                 thumbnail={true}
-                                 onClick={() => this.setState({showInLightbox: page})} />
+                    <PageContainer
+                      page={page}
+                      onClick={() => this.setState({showInLightbox: page})} />
                   </Col>
                 );
               })}

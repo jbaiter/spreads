@@ -29,78 +29,171 @@ export default React.createClass({
   propTypes: {
     page: PropTypes.object.isRequired,
     thumbnail: PropTypes.bool,
+    fit: PropTypes.bool,
+    full: PropTypes.bool,
     responsiveContainer: PropTypes.node,
     onClick: PropTypes.func
   },
 
   getDefaultProps() {
     return {
-      thumbnail: false
+      fit: false,
+      thumbnail: false,
+      full: false
     };
   },
 
   getInitialState() {
     return {
-      imgSize: null
+      contentSize: null,
+      containerSize: null
     };
   },
 
   /* eslint-disable */
-  shouldComponentUpdate({page: nextPage, thumbnail: nextThumb}, {imgSize: nextImgSize}) {
+  shouldComponentUpdate({page: nextPage, thumbnail: nextThumb, full: nextFull},
+                        {contentSize: nextContentSize, containerSize: nextContainerSize}) {
     /* eslint-enable */
     const curPage = this.props.page;
     return (nextPage.capture_num !== curPage.capture_num) ||
            (nextPage.processing_params.rotate !== curPage.processing_params.rotate) ||
            (nextPage.processing_params.crop !== curPage.processing_params.crop) ||
            (nextThumb !== this.props.thumbnail) ||
-           (nextImgSize !== this.state.imgSize);
+           (nextFull !== this.props.full) ||
+           (nextContentSize !== this.state.contentSize) ||
+           (nextContainerSize !== this.state.containerSize);
   },
 
-  handleSizeChanged({width, height}) {
-    this.setState({imgSize: {width, height}});
+  handleSizeChanged() {
+    const containerNode = React.findDOMNode(this.refs.container);
+    const contentNode = React.findDOMNode(this.refs.content);
+    this.setState({containerSize: {width: containerNode.offsetWidth,
+                                height: containerNode.offsetHeight},
+                  contentSize: {width: contentNode.offsetWidth,
+                                height: contentNode.offsetHeight}});
   },
 
-  getImageSrc({full=false, width}) {
+  getImageSrc() {
     return getImageUrl({page: this.props.page,
-                        width: (full || this.props.thumbnail) ? null : width || 640,
+                        width: (this.props.full || this.props.thumbnail) ? null : 800,
                         thumbnail: this.props.thumbnail});
   },
 
-  render() {
-    const rotation = this.props.page.processing_params.rotate;
-    let contentStyles = {};
-    let containerStyles = {};
+  getCropBoxStyle() {
     let cropBoxStyle = {};
-    if (this.props.page.processing_params.crop && this.state.imgSize) {
+    if (this.props.page.processing_params.crop && this.state.contentSize) {
       let relValues = this.props.page.processing_params.crop;
-      cropBoxStyle.left = relValues.x * this.state.imgSize.width;
-      cropBoxStyle.top = relValues.y * this.state.imgSize.height;
-      cropBoxStyle.width = relValues.width * this.state.imgSize.width;
-      cropBoxStyle.height = relValues.height * this.state.imgSize.height;
+      cropBoxStyle.left = relValues.x * this.state.contentSize.width;
+      cropBoxStyle.top = relValues.y * this.state.contentSize.height;
+      cropBoxStyle.width = relValues.width * this.state.contentSize.width;
+      cropBoxStyle.height = relValues.height * this.state.contentSize.height;
     }
+    return cropBoxStyle;
+  },
 
+  /** DANGER: Here be Dragons...
+   *
+   * These getStyles... methods are a complete and utter disaster.
+   * A feeble attempt at bludgeoning the DOM into rendering a responsive
+   * interface that works for thumbnails, scrollable lightboxes and fullscreen
+   * while at the same time rotating the images...
+   * Theres a lot of copypasta going on and the whole logic could probably
+   * use a thorough review from somebody who is more well-versed in the DOM
+   * than I am.
+   */
+  getStylesThumb() {
+    const rotation = this.props.page.processing_params.rotate;
+    let contentStyles = {
+      width: "100%"
+    };
+    let containerStyles = {
+      width: "100%"
+    };
     if (rotation > 0) {
       contentStyles.transform = `rotate(${rotation}deg)`;
-      if (this.state.imgSize) {
-        const {width, height} = this.state.imgSize;
+      // TODO: Make this fit the container width
+      if (this.state.contentSize) {
+        const {width, height} = this.state.contentSize;
         const smallDimension = Math.min(width, height);
         const largeDimension = Math.max(width, height);
 
         const offsetFactor = rotation === 90 ? 1 : -1;
         const offset = Math.floor(offsetFactor * (largeDimension - smallDimension) / 2);
-        contentStyles.transform += ` translateX(${offset}px)`;
+        contentStyles.transform += ` translateX(${offset}px) translateY(${offset}px)`;
 
-        containerStyles.width = largeDimension;
-        containerStyles.height = largeDimension;
+        containerStyles.width = rotation === 0 || rotation === 180 ? width : height;
+        containerStyles.height = rotation === 0 || rotation === 180 ? height : width;
+        contentStyles.width = rotation === 0 || rotation === 180 ? height : width;
+        contentStyles.height = rotation === 0 || rotation === 180 ? width : height;
       }
     }
+
+    return {contentStyles, containerStyles};
+  },
+
+  getStylesFit() {
+    const rotation = this.props.page.processing_params.rotate;
+    let contentStyles = {
+      width: "100%"
+    };
+    let containerStyles = {
+      width: "100%",
+      height: "100%"
+    };
+    if (rotation > 0) {
+      contentStyles.transform = `rotate(${rotation}deg)`;
+      contentStyles.width = rotation === 0 || rotation === 180 ? "auto" : this.state.containerSize.height;
+      contentStyles.height = rotation === 0 || rotation === 180 ? "100%" : "auto";
+      const {width, height} = this.state.contentSize;
+      const smallDimension = Math.min(width, height);
+      const largeDimension = Math.max(width, height);
+
+      const offsetFactor = rotation === 90 ? 1 : -1;
+      const offset = Math.floor(offsetFactor * (largeDimension - smallDimension) / 2);
+      contentStyles.transform += ` translateX(${offset}px) translateY(${offset}px)`;
+      contentStyles.position = "absolute";
+      contentStyles.left = `calc(50% - ${height / 2}px)`;
+    }
+    return {contentStyles, containerStyles};
+  },
+
+  getStylesDefault() {
+    const rotation = this.props.page.processing_params.rotate;
+    let contentStyles = {
+      width: "100%"
+    };
+    let containerStyles = {
+      width: "100%",
+      height: "100%"
+    };
+    if (rotation > 0) {
+      contentStyles.transform = `rotate(${rotation}deg)`;
+      contentStyles.width = rotation === 0 || rotation === 180 ? "auto" : "100%";
+      contentStyles.height = rotation === 0 || rotation === 180 ? "100%" : "auto";
+    }
+    return {contentStyles, containerStyles};
+  },
+
+  getStyles() {
+    if (this.props.thumbnail) {
+      return this.getStylesThumb();
+    } else if (this.props.fit) {
+      return this.getStylesFit();
+    } else {
+      return this.getStylesDefault();
+    }
+  },
+
+  render() {
+    let {contentStyles, containerStyles} = this.getStyles();
+    const cropBoxStyle = this.getCropBoxStyle();
+
     return (
       //FIXME: In fullscreen, the image is not resized properly
-      <div className="page-preview-container" style={containerStyles}>
-        <div className="page-preview-content" style={contentStyles}>
+      <div className="page-preview-container" style={containerStyles} ref="container">
+        <div className="page-preview-content" style={contentStyles} ref="content">
           <a onClick={this.props.onClick}>
-            <ResponsiveImage src={this.getImageSrc} onSizeChanged={this.handleSizeChanged}
-                             container={this.props.responsiveContainer} />
+            <img src={this.getImageSrc({})} onLoad={this.handleSizeChanged}/>
             {cropBoxStyle.width &&
             <div className="page-preview-crop-overlay" style={cropBoxStyle} />}
           </a>

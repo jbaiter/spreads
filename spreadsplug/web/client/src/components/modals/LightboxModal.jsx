@@ -39,7 +39,9 @@ export default React.createClass({
     enableCrop: PropTypes.bool,
     onCropped: PropTypes.func,
     onDelete: PropTypes.func,
-    onEdit: PropTypes.func
+    onEdit: PropTypes.func,
+    onEnterFullscreen: PropTypes.func,
+    onExitFullscreen: PropTypes.func
   },
 
   getDefaultProps() {
@@ -99,9 +101,9 @@ export default React.createClass({
     });
   },
 
-  getImageSrc({full=false, width}) {
+  getImageSrc({full=false}) {
     return getImageUrl({page: this.state.currentPage,
-                        width: full ? null : width || 640});
+                        width: full ? null : 640});
   },
 
   retrieveNativeSize(page) {
@@ -118,13 +120,15 @@ export default React.createClass({
       if (!this.state.imageNativeSize) {
         this.retrieveNativeSize(this.state.currentPage);
       }
-      return (<CropWidget imageSrc={this.getImageSrc} onSave={this.props.onCropped}
+      return (<CropWidget imageSrc={this.getImageSrc({full: true})}
+                          onSave={this.props.onCropped}
                           nativeSize={this.state.imageNativeSize}
                           initialCropParams={this.state.currentPage.processing_params.crop}
                           container={() => this.refs.container} />);
     } else {
       return (
-        <PagePreview page={this.state.currentPage}
+        <PagePreview page={this.state.currentPage} full={this.state.isFullscreen}
+                     fit={this.state.isFullscreen}
                      responsiveContainer={() => this.refs.container} />);
     }
   },
