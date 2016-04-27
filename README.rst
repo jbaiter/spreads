@@ -1,3 +1,9 @@
+Note
+----
+
+This is **not** the main repository for spreads, but a **personal fork**.
+Please go to https://github.com/DIYBookScanner/spreads for the latest version.
+
 .. image:: https://raw.github.com/jbaiter/spreads/master/doc/_static/logo.png
 
 .. image:: https://secure.travis-ci.org/jbaiter/spreads.png
@@ -11,6 +17,7 @@
 .. image:: https://pypip.in/v/spreads/badge.png
     :target: https://crate.io/packages/spreads/
     :alt: Latest PyPI version
+    
 
 *spreads* is a tool that aims to streamline your book scanning workflow.
 It takes care of every step: Setting up your capturing devices, handling
