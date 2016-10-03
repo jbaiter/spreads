@@ -82,11 +82,11 @@ Documentation
 -------------
 More documentation is available on readthedocs_
 
-.. _adding support for new devices: http://spreads.readthedocs.org/en/latest/extending.html#adding-support-for-new-devices
-.. _plugin hooks: http://spreads.readthedocs.org/en/latest/api.html#spreads-plugin
-.. _implement your own custom sub-commands: http://spreads.readthedocs.org/en/latest/extending.html#adding-new-commands
+.. _adding support for new devices: https://spreads.readthedocs.io/en/latest/developers.html#adding-support-for-new-devices
+.. _plugin hooks: https://spreads.readthedocs.io/en/latest/api.html#spreads-plugin
+.. _implement your own custom sub-commands: https://spreads.readthedocs.io/en/latest/developers.html#adding-new-commands
 .. _ppmunwarp: http://diybookscanner.org/forum/viewtopic.php?f=19&t=2589&p=14281#p14281
-.. _readthedocs: http://spreads.readthedocs.org
+.. _readthedocs: https://spreads.readthedocs.io
 .. _pip: http://www.pip-installer.org
 .. _ScanTailor-enhanced: http://sourceforge.net/p/scantailor/code/ci/enhanced/tree/
 .. _pdfbeads: http://rubygems.org/gems/pdfbeads
