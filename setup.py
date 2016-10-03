@@ -28,7 +28,7 @@ setup(
     version=spreads.__version__,
     author="Johannes Baiter",
     author_email="johannes.baiter@gmail.com",
-    url="http://spreads.readthedocs.org",
+    url="https://spreads.readthedocs.io",
     description="Book digitization workflow suite",
     long_description=description_long,
     license="GNU AGPLv3",
